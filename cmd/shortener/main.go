@@ -81,7 +81,7 @@ func replaceGET(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(longURL))
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 
 }
 
