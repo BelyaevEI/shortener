@@ -58,7 +58,6 @@ func replacePOST(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(shortURL))
 	}
-
 }
 
 func replaceGET(w http.ResponseWriter, r *http.Request) {
@@ -74,13 +73,8 @@ func replaceGET(w http.ResponseWriter, r *http.Request) {
 	//проверим по ID ссылку
 	if longURL, ok := short2long[id]; ok {
 		w.Header().Set("Location", longURL)
-		// } else {
-		// 	longURL = "https://practicum.yandex.ru/"
-		// 	w.Header().Set("Location", longURL)
-		// 	short2long[id] = longURL
 		w.WriteHeader(http.StatusTemporaryRedirect)
 		w.Write([]byte(longURL))
-		// http.Redirect(w, r, longURL, http.StatusTemporaryRedirect)
 	}
 
 }
