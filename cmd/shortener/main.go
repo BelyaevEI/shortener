@@ -76,7 +76,6 @@ func replaceGET(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTemporaryRedirect)
 		w.Write([]byte(longURL))
 	}
-
 }
 
 func generateRandomString(length int) string {
