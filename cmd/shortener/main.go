@@ -78,7 +78,7 @@ func replaceGET(w http.ResponseWriter, r *http.Request) {
 		// 	longURL = "https://practicum.yandex.ru/"
 		// 	w.Header().Set("Location", longURL)
 		// 	short2long[id] = longURL
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusTemporaryRedirect)
 		w.Write([]byte(longURL))
 		// http.Redirect(w, r, longURL, http.StatusTemporaryRedirect)
 	}
