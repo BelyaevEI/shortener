@@ -77,8 +77,11 @@ func TestReplacePOST(t *testing.T) {
 
 	t.Run(test2.name, func(t *testing.T) {
 
+		//Создаем тело запроса
+		requestBody := strings.NewReader(" ")
+
 		//Создаем сам запрос
-		request := httptest.NewRequest(http.MethodPost, "/", nil)
+		request := httptest.NewRequest(http.MethodPost, "/", requestBody)
 
 		//Устанавливаем заголовок
 		request.Header.Set("Content-Type", "text/plain")
@@ -92,6 +95,7 @@ func TestReplacePOST(t *testing.T) {
 		//Получаем ответ
 		result := responseRecorder.Result()
 
+		defer result.Body.Close()
 		//Делаем проверки
 		//Проверка ответа сервера
 		assert.Equal(t, test2.want.code, result.StatusCode)
@@ -124,6 +128,8 @@ func TestReplaceGET(t *testing.T) {
 
 		//Получаем ответ
 		result := responseRecorder.Result()
+
+		defer result.Body.Close()
 
 		//Делаем проверки
 		//Проверка ответа сервера
