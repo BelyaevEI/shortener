@@ -66,7 +66,7 @@ func TestReplacePOST(t *testing.T) {
 
 		//Получаем тело ответа
 		resBody, err := io.ReadAll(result.Body)
-		result.Body.Close()
+		defer result.Body.Close()
 
 		//Проверка ответа без ошибок
 		require.NoError(t, err)
