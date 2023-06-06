@@ -65,8 +65,8 @@ func TestReplacePOST(t *testing.T) {
 		assert.Equal(t, result.Header.Get("Content-Type"), test1.want.contentType)
 
 		//Получаем тело ответа
-		defer result.Body.Close()
 		resBody, err := io.ReadAll(result.Body)
+		result.Body.Close()
 
 		//Проверка ответа без ошибок
 		require.NoError(t, err)
