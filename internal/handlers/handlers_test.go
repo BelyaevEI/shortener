@@ -25,20 +25,20 @@ func TestReplacePOST(t *testing.T) {
 	}
 
 	//Сформируем варианты для тестирования
-	test_1 := test{name: "Simple test POST request",
+	test1 := test{name: "Simple test POST request",
 		want: want{
 			code:        http.StatusCreated,
 			contentType: "text/plain",
 		},
 	}
 
-	test_2 := test{name: "Empty link in body",
+	test2 := test{name: "Empty link in body",
 		want: want{
 			code: http.StatusBadRequest,
 		},
 	}
 
-	t.Run(test_1.name, func(t *testing.T) {
+	t.Run(test1.name, func(t *testing.T) {
 		//Создаем тело запроса
 		requestBody := strings.NewReader("https://practicum.yandex.ru/ ")
 
@@ -59,10 +59,10 @@ func TestReplacePOST(t *testing.T) {
 
 		//Делаем проверки
 		//Проверка ответа сервера
-		assert.Equal(t, test_1.want.code, result.StatusCode)
+		assert.Equal(t, test1.want.code, result.StatusCode)
 
 		//Проверка типа контента
-		assert.Equal(t, result.Header.Get("Content-Type"), test_1.want.contentType)
+		assert.Equal(t, result.Header.Get("Content-Type"), test1.want.contentType)
 
 		//Получаем тело ответа
 		defer result.Body.Close()
@@ -75,7 +75,7 @@ func TestReplacePOST(t *testing.T) {
 		assert.NotEmpty(t, string(resBody))
 	})
 
-	t.Run(test_2.name, func(t *testing.T) {
+	t.Run(test2.name, func(t *testing.T) {
 
 		//Создаем сам запрос
 		request := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -94,7 +94,7 @@ func TestReplacePOST(t *testing.T) {
 
 		//Делаем проверки
 		//Проверка ответа сервера
-		assert.Equal(t, test_1.want.code, result.StatusCode)
+		assert.Equal(t, test2.want.code, result.StatusCode)
 
 	})
 
@@ -109,9 +109,9 @@ func TestReplaceGET(t *testing.T) {
 	}
 
 	//Сформируем варианты для тестирования
-	test_1 := test{name: "Empty ID in URL", code: http.StatusBadRequest}
+	test1 := test{name: "Empty ID in URL", code: http.StatusBadRequest}
 
-	t.Run(test_1.name, func(t *testing.T) {
+	t.Run(test1.name, func(t *testing.T) {
 
 		//Создаем сам запрос
 		request := httptest.NewRequest(http.MethodGet, "/asd/", nil)
@@ -127,7 +127,7 @@ func TestReplaceGET(t *testing.T) {
 
 		//Делаем проверки
 		//Проверка ответа сервера
-		assert.Equal(t, test_1.code, result.StatusCode)
+		assert.Equal(t, test1.code, result.StatusCode)
 
 	})
 
