@@ -1,17 +1,14 @@
 package main
 
 import (
-	"net/http"
+	"log"
 
 	"github.com/BelyaevEI/shortener/internal/app"
 )
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc(`/`, app.Shortener)
 
-	err := http.ListenAndServe(`:8080`, mux)
-	if err != nil {
-		panic(err)
+	if err := app.RunServer(); err != nil {
+		log.Fatal(err)
 	}
 }
