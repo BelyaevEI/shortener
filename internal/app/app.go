@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/BelyaevEI/shortener/internal/handlers"
+	"github.com/go-chi/chi/v5"
 )
 
 func Shortener(w http.ResponseWriter, r *http.Request) {
@@ -16,4 +17,12 @@ func Shortener(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 	}
+}
+
+func RunServer() error {
+
+	r := chi.NewRouter()
+	r.Get("/{id}", handlers.ReplaceGET)
+	r.Post("/", handlers.ReplacePOST)
+	return http.ListenAndServe(":8080", r)
 }
