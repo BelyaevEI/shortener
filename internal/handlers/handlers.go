@@ -21,12 +21,13 @@ func ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//проверим что ссылка передается в Header с нужным типом
-	contentType := r.Header.Get("Content-Type")
-	if contentType != "text/plain" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	//Не проходит тесты первого инкремента
+	// //проверим что ссылка передается в Header с нужным типом
+	// contentType := r.Header.Get("Content-Type")
+	// if contentType != "text/plain" {
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	return
+	// }
 
 	//Проверим наличие короткой ссылки по длинной, если ее нет
 	//то сгенерируем и запишем в словарь
