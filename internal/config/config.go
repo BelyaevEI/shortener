@@ -15,7 +15,7 @@ func ParseFlags() {
 
 	// регистрируем переменную ShortURL
 	// как аргумент -b со значением http://localhost:8080/ по умолчанию
-	flag.StringVar(&ShortURL, "b", "http://localhost:8080/", "response URL")
+	flag.StringVar(&ShortURL, "b", "http://localhost:8080", "response URL")
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
