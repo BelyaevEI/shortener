@@ -97,5 +97,5 @@ func generateRandomString(length int) string {
 		result[i] = charSet[rand.Intn(len(charSet))]
 	}
 
-	return string(result)
+	return "/" + string(result)
 }
