@@ -41,7 +41,7 @@ func ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		short := generateRandomString(8)
 		// shortURL = "http://localhost:8080/" + short
 
-		shortURL = config.ShortURL + short
+		shortURL = config.ShortURL + "/" + short
 
 		long2short[string(longURL)] = shortURL
 		short2long[short] = string(longURL)
