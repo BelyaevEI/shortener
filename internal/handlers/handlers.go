@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/BelyaevEI/shortener/internal/config"
 )
 
 // Вынести в отдельный каталог?
@@ -37,7 +39,9 @@ func ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(shortURL))
 	} else {
 		short := generateRandomString(8)
-		shortURL = "http://localhost:8080/" + short
+		// shortURL = "http://localhost:8080/" + short
+
+		shortURL = config.ShortURL + short
 
 		long2short[string(longURL)] = shortURL
 		short2long[short] = string(longURL)
