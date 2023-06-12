@@ -1,6 +1,9 @@
 package config
 
-import "flag"
+import (
+	"flag"
+	"os"
+)
 
 var (
 	FlagRunAddr string
@@ -19,5 +22,16 @@ func ParseFlags() {
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
+
+	// возьмем из переменной окружения SERVER_ADDRESS адрес запуска сервера
+	// переопределим переменную из переменного окружения, если есть
+	if envRunAddr := os.Getenv("SERVER_ADDRESS"); envRunAddr != "" {
+		FlagRunAddr = envRunAddr
+	}
+
+	// переопределим базовый адрес результирующего сокращенного URL если есть
+	if envShortUrl := os.Getenv("BASE_URL"); envShortUrl != "" {
+		ShortURL = envShortUrl
+	}
 
 }
