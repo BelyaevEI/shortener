@@ -30,8 +30,8 @@ func ParseFlags() {
 	}
 
 	// переопределим базовый адрес результирующего сокращенного URL если есть
-	if envShortUrl := os.Getenv("BASE_URL"); envShortUrl != "" {
-		ShortURL = envShortUrl
+	if envShortURL := os.Getenv("BASE_URL"); envShortURL != "" {
+		ShortURL = envShortURL
 	}
 
 }
