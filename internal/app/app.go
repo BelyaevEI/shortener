@@ -14,6 +14,7 @@ func RunServer() error {
 	config.ParseFlags()
 
 	r := chi.NewRouter()
+
 	r.Get("/{id}", logger.WithLogging(handlers.ReplaceGET()))
 	r.Post("/", logger.WithLogging(handlers.ReplacePOST()))
 
