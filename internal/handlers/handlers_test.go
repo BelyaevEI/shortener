@@ -52,7 +52,8 @@ func TestReplacePOST(t *testing.T) {
 		responseRecorder := httptest.NewRecorder()
 
 		//Обрабатываем запрос
-		ReplacePOST(responseRecorder, request)
+		r := ReplacePOST()
+		r(responseRecorder, request)
 
 		//Получаем ответ
 		result := responseRecorder.Result()
@@ -90,7 +91,8 @@ func TestReplacePOST(t *testing.T) {
 		responseRecorder := httptest.NewRecorder()
 
 		//Обрабатываем запрос
-		ReplacePOST(responseRecorder, request)
+		r := ReplacePOST()
+		r(responseRecorder, request)
 
 		//Получаем ответ
 		result := responseRecorder.Result()
@@ -124,7 +126,10 @@ func TestReplaceGET(t *testing.T) {
 		responseRecorder := httptest.NewRecorder()
 
 		//Обрабатываем запрос
-		ReplaceGET(responseRecorder, request)
+		r := ReplaceGET()
+
+		// ReplaceGET(responseRecorder, request)
+		r(responseRecorder, request)
 
 		//Получаем ответ
 		result := responseRecorder.Result()
