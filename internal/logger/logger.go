@@ -38,7 +38,7 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode // захватываем код статуса
 }
 
-func GetWithLogging(h http.HandlerFunc) http.HandlerFunc {
+func WithLogging(h http.HandlerFunc) http.HandlerFunc {
 	logGet := func(w http.ResponseWriter, r *http.Request) {
 
 		// создаём предустановленный регистратор zap
@@ -90,10 +90,4 @@ func GetWithLogging(h http.HandlerFunc) http.HandlerFunc {
 	}
 	// возвращаем функционально расширенный хендлер
 	return http.HandlerFunc(logGet)
-}
-
-func PostWithLogging(h http.HandlerFunc) http.HandlerFunc {
-	logPost := func(w http.ResponseWriter, r *http.Request) {
-	}
-	return http.HandlerFunc(logPost)
 }
