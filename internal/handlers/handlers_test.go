@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -130,13 +131,10 @@ func TestPostAPI(t *testing.T) {
 
 	t.Run(test1.name, func(t *testing.T) {
 
-		//Создаем тело запроса
-		requestBody := strings.NewReader(test1.body)
-		json.NewDecoder(requestBody)
-		// dec.Decode(&req)
+		// Преобразуем JSON объект в байтовый массив
+		jsonData, _ := json.Marshal(test1.body)
 
-		//Создаем сам запрос
-		request := httptest.NewRequest(http.MethodPost, "/api/shorten", requestBody)
+		request, _ := http.NewRequest(http.MethodPost, "/api/shorten", bytes.NewBuffer(jsonData))
 
 		//Устанавливаем заголовок
 		request.Header.Set("Content-Type", "json/application")
@@ -152,20 +150,10 @@ func TestPostAPI(t *testing.T) {
 		result := responseRecorder.Result()
 
 		defer result.Body.Close()
+
 		//Делаем проверки
 		//Проверка ответа сервера
 		assert.Equal(t, test1.expectedCode, result.StatusCode)
-
-		// req := resty.New().R()
-		// req.Method = test1.method
-		// req.URL = srv.URL
-		// req.SetHeader("Content-Type", "application/json")
-		// req.SetBody(test1.body)
-
-		// resp, err := req.Send()
-		// assert.NoError(t, err, "error making HTTP request")
-		// assert.Equal(t, test1.expectedCode, resp.StatusCode())
-		// assert.NotEmpty(t, resp.Body())
 
 	})
 }

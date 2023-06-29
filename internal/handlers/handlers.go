@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
@@ -62,7 +61,7 @@ func PostAPI() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		fmt.Print(req.URL)
+
 		//проверим на пустоту приходящую ссылку
 		if req.URL == " " {
 			w.WriteHeader(http.StatusBadRequest)
