@@ -122,7 +122,7 @@ func TestPostAPI(t *testing.T) {
 		name:         "Simple test PostAPI",
 		method:       http.MethodPost,
 		expectedCode: http.StatusCreated,
-		body:         `"url":"https://practicum.yandex.ru/ "`,
+		body:         `"url":"https://practicum.yandex.ru/"`,
 	}
 
 	// handler := PostAPI()

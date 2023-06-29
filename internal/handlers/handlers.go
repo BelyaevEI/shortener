@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"math/rand"
@@ -53,20 +54,34 @@ func PostAPI() http.HandlerFunc {
 		var (
 			req      models.Request
 			shortURL string
+			buf      bytes.Buffer
 		)
 
-		dec := json.NewDecoder(r.Body)
+		// dec := json.NewDecoder(r.Body)
 
-		if err := dec.Decode(&req); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+		// читаем тело запроса
+		_, err := buf.ReadFrom(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		//проверим на пустоту приходящую ссылку
-		if req.URL == " " {
-			w.WriteHeader(http.StatusBadRequest)
+		// десериализуем JSON в Visitor
+		if err = json.Unmarshal(buf.Bytes(), &req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		// if err := dec.Decode(&req); err != nil {
+		// 	w.WriteHeader(http.StatusInternalServerError)
+		// 	return
+		// }
+
+		// //проверим на пустоту приходящую ссылку
+		// if req.URL == " " {
+		// 	w.WriteHeader(http.StatusBadRequest)
+		// 	return
+		// }
 
 		longURL := req.URL
 
