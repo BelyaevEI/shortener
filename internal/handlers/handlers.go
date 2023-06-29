@@ -57,8 +57,6 @@ func PostAPI() http.HandlerFunc {
 			buf      bytes.Buffer
 		)
 
-		// dec := json.NewDecoder(r.Body)
-
 		// читаем тело запроса
 		_, err := buf.ReadFrom(r.Body)
 		if err != nil {
@@ -66,22 +64,11 @@ func PostAPI() http.HandlerFunc {
 			return
 		}
 
-		// десериализуем JSON в Visitor
+		// десериализуем JSON
 		if err = json.Unmarshal(buf.Bytes(), &req); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
-		// if err := dec.Decode(&req); err != nil {
-		// 	w.WriteHeader(http.StatusInternalServerError)
-		// 	return
-		// }
-
-		// //проверим на пустоту приходящую ссылку
-		// if req.URL == " " {
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	return
-		// }
 
 		longURL := req.URL
 
@@ -106,15 +93,21 @@ func PostAPI() http.HandlerFunc {
 		}
 
 		//сериализуем ответ сервера
-		enc := json.NewEncoder(w)
-		if err := enc.Encode(resp); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+		re, err := json.Marshal(resp)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// enc := json.NewEncoder(w)
+		// if err := enc.Encode(resp); err != nil {
+		// 	w.WriteHeader(http.StatusBadRequest)
+		// 	return
+		// }
+
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
-
+		w.Write(re)
 	}
 	return http.HandlerFunc(post)
 }

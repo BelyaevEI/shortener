@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -122,22 +121,18 @@ func TestPostAPI(t *testing.T) {
 		name:         "Simple test PostAPI",
 		method:       http.MethodPost,
 		expectedCode: http.StatusCreated,
-		body:         `"url":"https://practicum.yandex.ru/"`,
+		body:         `{"url":"https://practicum.yandex.ru/"}`,
 	}
-
-	// handler := PostAPI()
-	// srv := httptest.NewServer(handler)
-	// defer srv.Close()
 
 	t.Run(test1.name, func(t *testing.T) {
 
 		// Преобразуем JSON объект в байтовый массив
-		jsonData, _ := json.Marshal(test1.body)
+		jsonData := []byte(test1.body)
 
 		request, _ := http.NewRequest(http.MethodPost, "/api/shorten", bytes.NewBuffer(jsonData))
 
 		//Устанавливаем заголовок
-		request.Header.Set("Content-Type", "json/application")
+		request.Header.Set("Content-Type", "application/json")
 
 		//Создаем рекордер для записи ответа
 		responseRecorder := httptest.NewRecorder()
