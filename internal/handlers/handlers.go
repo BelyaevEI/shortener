@@ -92,6 +92,8 @@ func PostAPI() http.HandlerFunc {
 			Result: shortURL,
 		}
 
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
 		//сериализуем ответ сервера
 		enc := json.NewEncoder(w)
 		if err := enc.Encode(resp); err != nil {
@@ -99,8 +101,6 @@ func PostAPI() http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
-		w.Header().Set("Content-Type", "application/json")
 	}
 	return http.HandlerFunc(post)
 }
