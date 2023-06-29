@@ -62,14 +62,14 @@ func PostAPI() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		fmt.Print(req.Url)
+		fmt.Print(req.URL)
 		//проверим на пустоту приходящую ссылку
-		if req.Url == " " {
+		if req.URL == " " {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		longURL := req.Url
+		longURL := req.URL
 
 		//Проверим наличие короткой ссылки по длинной, если ее нет
 		//то сгенерируем и запишем в словарь
