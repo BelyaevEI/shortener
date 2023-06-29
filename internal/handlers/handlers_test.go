@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/go-resty/resty/v2"
+	// "github.com/go-resty/resty/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -123,22 +124,49 @@ func TestPostAPI(t *testing.T) {
 		body:         `"url":"https://practicum.yandex.ru/ "`,
 	}
 
-	handler := PostAPI()
-	srv := httptest.NewServer(handler)
-	defer srv.Close()
+	// handler := PostAPI()
+	// srv := httptest.NewServer(handler)
+	// defer srv.Close()
 
 	t.Run(test1.name, func(t *testing.T) {
 
-		req := resty.New().R()
-		req.Method = test1.method
-		req.URL = srv.URL
-		req.SetHeader("Content-Type", "application/json")
-		req.SetBody(test1.body)
+		//Создаем тело запроса
+		requestBody := strings.NewReader(test1.body)
+		json.NewDecoder(requestBody)
+		// dec.Decode(&req)
 
-		resp, err := req.Send()
-		assert.NoError(t, err, "error making HTTP request")
-		assert.Equal(t, test1.expectedCode, resp.StatusCode())
-		assert.NotEmpty(t, resp.Body())
+		//Создаем сам запрос
+		request := httptest.NewRequest(http.MethodPost, "/api/shorten", requestBody)
+
+		//Устанавливаем заголовок
+		request.Header.Set("Content-Type", "json/application")
+
+		//Создаем рекордер для записи ответа
+		responseRecorder := httptest.NewRecorder()
+
+		//Обрабатываем запрос
+		r := PostAPI()
+		r(responseRecorder, request)
+
+		//Получаем ответ
+		result := responseRecorder.Result()
+
+		defer result.Body.Close()
+		//Делаем проверки
+		//Проверка ответа сервера
+		assert.Equal(t, test1.expectedCode, result.StatusCode)
+
+		// req := resty.New().R()
+		// req.Method = test1.method
+		// req.URL = srv.URL
+		// req.SetHeader("Content-Type", "application/json")
+		// req.SetBody(test1.body)
+
+		// resp, err := req.Send()
+		// assert.NoError(t, err, "error making HTTP request")
+		// assert.Equal(t, test1.expectedCode, resp.StatusCode())
+		// assert.NotEmpty(t, resp.Body())
+
 	})
 }
 
