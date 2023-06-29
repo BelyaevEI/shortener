@@ -41,7 +41,7 @@ func TestReplacePOST(t *testing.T) {
 
 	t.Run(test1.name, func(t *testing.T) {
 		//Создаем тело запроса
-		requestBody := strings.NewReader("https://practicum.yandex.ru/ ")
+		requestBody := strings.NewReader("https://practicum.yandex.ru/")
 
 		//Создаем сам запрос
 		request := httptest.NewRequest(http.MethodPost, "/", requestBody)
@@ -113,7 +113,6 @@ func TestPostAPI(t *testing.T) {
 		name         string // добавляем название тестов
 		method       string
 		expectedCode int
-		expectedBody string
 		body         string
 	}
 

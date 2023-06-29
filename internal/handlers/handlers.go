@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
@@ -24,14 +25,6 @@ func ReplacePOST() http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-
-		//Не проходит тесты первого инкремента
-		// //проверим что ссылка передается в Header с нужным типом
-		// contentType := r.Header.Get("Content-Type")
-		// if contentType != "text/plain" {
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	return
-		// }
 
 		//Проверим наличие короткой ссылки по длинной, если ее нет
 		//то сгенерируем и запишем в словарь
@@ -69,7 +62,7 @@ func PostAPI() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
+		fmt.Print(req.Url)
 		//проверим на пустоту приходящую ссылку
 		if req.Url == " " {
 			w.WriteHeader(http.StatusBadRequest)
@@ -118,8 +111,8 @@ func ReplaceGET() http.HandlerFunc {
 		var id string
 
 		//получим ID из запроса
-		// idLong := r.URL.Path[1:]
-		idLong := r.URL.Query().Get("id")
+		idLong := r.URL.Path[1:]
+		// idLong := r.URL.Query().Get("id")
 
 		if strings.ContainsRune(idLong, '/') {
 			id = strings.Split(idLong, "/")[0]

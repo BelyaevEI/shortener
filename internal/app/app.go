@@ -16,6 +16,7 @@ func RunServer() error {
 	r := chi.NewRouter()
 
 	r.Get("/{id}", logger.WithLogging(handlers.ReplaceGET()))
+	r.Post("/api/shorten", logger.WithLogging(handlers.PostAPI()))
 	r.Post("/", logger.WithLogging(handlers.ReplacePOST()))
 
 	return http.ListenAndServe(config.FlagRunAddr, r)
