@@ -93,21 +93,14 @@ func PostAPI() http.HandlerFunc {
 		}
 
 		//сериализуем ответ сервера
-		re, err := json.Marshal(resp)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(resp); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		// enc := json.NewEncoder(w)
-		// if err := enc.Encode(resp); err != nil {
-		// 	w.WriteHeader(http.StatusBadRequest)
-		// 	return
-		// }
-
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(re)
 	}
 	return http.HandlerFunc(post)
 }
