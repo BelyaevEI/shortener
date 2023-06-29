@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -104,6 +105,42 @@ func TestReplacePOST(t *testing.T) {
 
 	})
 
+}
+
+func TestPostAPI(t *testing.T) {
+	//Структура запроса
+	type test struct {
+		name         string // добавляем название тестов
+		method       string
+		expectedCode int
+		expectedBody string
+		body         string
+	}
+
+	test1 := test{
+		name:         "Simple test PostAPI",
+		method:       http.MethodPost,
+		expectedCode: http.StatusCreated,
+		body:         `"url":"https://practicum.yandex.ru/ "`,
+	}
+
+	handler := PostAPI()
+	srv := httptest.NewServer(handler)
+	defer srv.Close()
+
+	t.Run(test1.name, func(t *testing.T) {
+
+		req := resty.New().R()
+		req.Method = test1.method
+		req.URL = srv.URL
+		req.SetHeader("Content-Type", "application/json")
+		req.SetBody(test1.body)
+
+		resp, err := req.Send()
+		assert.NoError(t, err, "error making HTTP request")
+		assert.Equal(t, test1.expectedCode, resp.StatusCode())
+		assert.NotEmpty(t, resp.Body())
+	})
 }
 
 func TestReplaceGET(t *testing.T) {

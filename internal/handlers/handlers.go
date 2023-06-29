@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"io"
 	"math/rand"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/BelyaevEI/shortener/internal/config"
+	"github.com/BelyaevEI/shortener/internal/models"
 )
 
 // Вынести в отдельный каталог?
@@ -54,13 +56,70 @@ func ReplacePOST() http.HandlerFunc {
 	return http.HandlerFunc(post)
 }
 
+func PostAPI() http.HandlerFunc {
+	post := func(w http.ResponseWriter, r *http.Request) {
+		var (
+			req      models.Request
+			shortURL string
+		)
+
+		dec := json.NewDecoder(r.Body)
+
+		if err := dec.Decode(&req); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		//проверим на пустоту приходящую ссылку
+		if req.Url == " " {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		longURL := req.Url
+
+		//Проверим наличие короткой ссылки по длинной, если ее нет
+		//то сгенерируем и запишем в словарь
+		if s, ok := long2short[string(longURL)]; !ok {
+
+			short := generateRandomString(8)
+
+			shortURL = config.ShortURL + "/" + short
+
+			long2short[string(longURL)] = shortURL
+			short2long[short] = string(longURL)
+
+		} else {
+			shortURL = s
+		}
+
+		// заполняем модель ответа
+		resp := models.Response{
+			Result: shortURL,
+		}
+
+		//сериализуем ответ сервера
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(resp); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Header().Set("Content-Type", "application/json")
+
+	}
+	return http.HandlerFunc(post)
+}
+
 func ReplaceGET() http.HandlerFunc {
 
 	get := func(w http.ResponseWriter, r *http.Request) {
 		var id string
 
 		//получим ID из запроса
-		idLong := r.URL.Path[1:]
+		// idLong := r.URL.Path[1:]
+		idLong := r.URL.Query().Get("id")
 
 		if strings.ContainsRune(idLong, '/') {
 			id = strings.Split(idLong, "/")[0]
