@@ -13,7 +13,7 @@ import (
 	"github.com/BelyaevEI/shortener/internal/models"
 )
 
-// Вынести в отдельный каталог?
+// вместо БД пока мапы
 var short2long = make(map[string]string) //Словарь для получения полного URL по короткому
 var long2short = make(map[string]string) //Словарь для получения короткого URL по полному
 
@@ -94,6 +94,7 @@ func PostAPI() http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
+
 		//сериализуем ответ сервера
 		enc := json.NewEncoder(w)
 		if err := enc.Encode(resp); err != nil {

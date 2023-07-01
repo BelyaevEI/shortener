@@ -3,6 +3,7 @@ package app
 import (
 	"net/http"
 
+	"github.com/BelyaevEI/shortener/internal/compres"
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/handlers"
 	"github.com/BelyaevEI/shortener/internal/logger"
@@ -15,9 +16,9 @@ func RunServer() error {
 
 	r := chi.NewRouter()
 
-	r.Get("/{id}", logger.WithLogging(handlers.ReplaceGET()))
-	r.Post("/api/shorten", logger.WithLogging(handlers.PostAPI()))
-	r.Post("/", logger.WithLogging(handlers.ReplacePOST()))
+	r.Get("/{id}", logger.WithLogging(compres.GzipMiddleware(handlers.ReplaceGET())))
+	r.Post("/api/shorten", logger.WithLogging(compres.GzipMiddleware(handlers.PostAPI())))
+	r.Post("/", logger.WithLogging(compres.GzipMiddleware(handlers.ReplacePOST())))
 
 	return http.ListenAndServe(config.FlagRunAddr, r)
 }
