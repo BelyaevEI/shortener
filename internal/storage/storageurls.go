@@ -16,15 +16,15 @@ type Storage struct {
 	reader  *bufio.Reader
 }
 
-func NewStorage() Storage {
+func NewStorage() *Storage {
 
 	// открываем файл для записи в конец
 	file, err := os.OpenFile(config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		return Storage{}
+		return &Storage{}
 	}
 
-	return Storage{
+	return &Storage{
 		file:    file,
 		encoder: json.NewEncoder(file),
 		reader:  bufio.NewReader(file),
