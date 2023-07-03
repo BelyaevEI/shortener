@@ -39,10 +39,10 @@ func ReplacePOST() http.HandlerFunc {
 		// запишем в файл и отправим пользвоателю
 		if shortid = utils.TryFoundShortURL(longURL, storage); shortid != " " {
 
-			shortUrl := shortid
+			shortURL := shortid
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(shortUrl))
+			w.Write([]byte(shortURL))
 
 		} else {
 
@@ -157,10 +157,10 @@ func ReplaceGET() http.HandlerFunc {
 
 		// Проверим, есть ли в файле нужная ссылка
 		// если ее нет, отправляем 400 пользователю
-		if originUrl := utils.TryFoundOrigURL(id, storage); originUrl != " " {
-			w.Header().Set("Location", originUrl)
+		if originURL := utils.TryFoundOrigURL(id, storage); originURL != " " {
+			w.Header().Set("Location", originURL)
 			w.WriteHeader(http.StatusTemporaryRedirect)
-			w.Write([]byte(originUrl))
+			w.Write([]byte(originURL))
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
