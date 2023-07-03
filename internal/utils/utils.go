@@ -23,7 +23,7 @@ func GenerateRandomString(length int) string {
 	return string(result)
 }
 
-func TryFoundOrigUrl(short_url string, s []models.StorageURL) (url string) {
+func TryFoundOrigURL(short_url string, s []models.StorageURL) (url string) {
 
 	for _, ur := range s {
 		if ur.ShortURL == short_url {
@@ -33,7 +33,7 @@ func TryFoundOrigUrl(short_url string, s []models.StorageURL) (url string) {
 	return url
 }
 
-func TryFoundShortUrl(u []byte, s []models.StorageURL) (url string) {
+func TryFoundShortURL(u []byte, s []models.StorageURL) (url string) {
 	long_url := string(u)
 	for _, ur := range s {
 		if ur.OriginalURL == long_url {
