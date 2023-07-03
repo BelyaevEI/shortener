@@ -158,7 +158,7 @@ func ReplaceGET() http.HandlerFunc {
 
 		// Проверим, есть ли в файле нужная ссылка
 		// если ее нет, отправляем 400 пользователю
-		if originURL := utils.TryFoundOrigURL(id, storage); originURL != " " {
+		if originURL := utils.TryFoundOrigURL(id, storage); originURL != "" {
 			w.Header().Set("Location", originURL)
 			w.WriteHeader(http.StatusTemporaryRedirect)
 			w.Write([]byte(originURL))
