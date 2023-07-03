@@ -23,7 +23,7 @@ func ParseFlags() {
 
 	// регистрируем переменную FileStoragePath
 	// как аргумент -f со значением /tmp/short-url-db.json по умолчанию
-	flag.StringVar(&FileStoragePath, "f", "/tmp/short-url-db.json", "path to file storage")
+	flag.StringVar(&FileStoragePath, "f", "/short-url-db.json", "path to file storage")
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()

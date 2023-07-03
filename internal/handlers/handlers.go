@@ -20,11 +20,12 @@ func ReplacePOST() http.HandlerFunc {
 		var (
 			LongShortURL models.StorageURL
 			shortid      string
+			shortURL     string
 		)
 		// Открываем файл на чтение/запись
 		f := storage.NewStorage()
 
-		defer f.Close()
+		// defer f.Close()
 
 		storage := f.ReadAllURLS()
 
@@ -37,9 +38,9 @@ func ReplacePOST() http.HandlerFunc {
 
 		// Проверяем есть ли в файле ссылка, если нет, то сгенерируем,
 		// запишем в файл и отправим пользвоателю
-		if shortid = utils.TryFoundShortURL(longURL, storage); shortid != " " {
+		if shortid = utils.TryFoundShortURL(longURL, storage); shortid != "" {
 
-			shortURL := shortid
+			shortURL = shortid
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
 			w.Write([]byte(shortURL))
@@ -47,7 +48,7 @@ func ReplacePOST() http.HandlerFunc {
 		} else {
 
 			shortid = utils.GenerateRandomString(8)
-			shortURL := config.ShortURL + "/" + shortid
+			shortURL = config.ShortURL + "/" + shortid
 			LongShortURL.OriginalURL = string(longURL)
 			LongShortURL.ShortURL = shortURL
 			f.WriteURL(&LongShortURL) // Запись новой пары в файл
@@ -95,7 +96,7 @@ func PostAPI() http.HandlerFunc {
 
 		// Проверяем есть ли в файле ссылка, если нет, то сгенерируем,
 		// запишем в файл и отправим пользвоателю
-		if shortid = utils.TryFoundShortURL([]byte(longURL), storage); shortid == " " {
+		if shortid = utils.TryFoundShortURL([]byte(longURL), storage); shortid == "" {
 
 			shortid = utils.GenerateRandomString(8)
 			shortURL = config.ShortURL + "/" + shortid
@@ -157,7 +158,7 @@ func ReplaceGET() http.HandlerFunc {
 
 		// Проверим, есть ли в файле нужная ссылка
 		// если ее нет, отправляем 400 пользователю
-		if originURL := utils.TryFoundOrigURL(id, storage); originURL != " " {
+		if originURL := utils.TryFoundOrigURL(id, storage); originURL != "" {
 			w.Header().Set("Location", originURL)
 			w.WriteHeader(http.StatusTemporaryRedirect)
 			w.Write([]byte(originURL))
