@@ -18,7 +18,7 @@ func ReplacePOST() http.HandlerFunc {
 	post := func(w http.ResponseWriter, r *http.Request) {
 
 		var (
-			LongShortUrl models.StorageURL
+			LongShortURL models.StorageURL
 			shortid      string
 		)
 		// Открываем файл на чтение/запись
@@ -39,23 +39,22 @@ func ReplacePOST() http.HandlerFunc {
 		// запишем в файл и отправим пользвоателю
 		if shortid = utils.TryFoundShortURL(longURL, storage); shortid != " " {
 
-			short_url := config.ShortURL + "/" + shortid
+			shortUrl := shortid
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(short_url))
+			w.Write([]byte(shortUrl))
 
 		} else {
 
 			shortid = utils.GenerateRandomString(8)
-			LongShortUrl.OriginalURL = string(longURL)
-			LongShortUrl.ShortURL = shortid
-			f.WriteURL(&LongShortUrl) // Запись новой пары в файл
-
-			short_url := config.ShortURL + "/" + shortid
+			shortUrl := config.ShortURL + "/" + shortid
+			LongShortURL.OriginalURL = string(longURL)
+			LongShortURL.ShortURL = shortUrl
+			f.WriteURL(&LongShortURL) // Запись новой пары в файл
 
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(short_url))
+			w.Write([]byte(shortUrl))
 		}
 
 	}
@@ -68,7 +67,7 @@ func PostAPI() http.HandlerFunc {
 			req          models.Request
 			shortURL     string
 			buf          bytes.Buffer
-			LongShortUrl models.StorageURL
+			LongShortURL models.StorageURL
 			shortid      string
 		)
 
@@ -99,12 +98,13 @@ func PostAPI() http.HandlerFunc {
 		if shortid = utils.TryFoundShortURL([]byte(longURL), storage); shortid == " " {
 
 			shortid = utils.GenerateRandomString(8)
-			LongShortUrl.OriginalURL = longURL
-			LongShortUrl.ShortURL = shortid
-			f.WriteURL(&LongShortUrl) // Запись новой пары в файл
+			shortURL = config.ShortURL + "/" + shortid
+			LongShortURL.OriginalURL = longURL
+			LongShortURL.ShortURL = shortURL
+			f.WriteURL(&LongShortURL) // Запись новой пары в файл
 		}
 
-		shortURL = config.ShortURL + "/" + shortid
+		shortURL = shortid
 
 		// заполняем модель ответа
 		resp := models.Response{
@@ -157,10 +157,10 @@ func ReplaceGET() http.HandlerFunc {
 
 		// Проверим, есть ли в файле нужная ссылка
 		// если ее нет, отправляем 400 пользователю
-		if originurl := utils.TryFoundOrigURL(id, storage); originurl != " " {
-			w.Header().Set("Location", originurl)
+		if originUrl := utils.TryFoundOrigURL(id, storage); originUrl != " " {
+			w.Header().Set("Location", originUrl)
 			w.WriteHeader(http.StatusTemporaryRedirect)
-			w.Write([]byte(originurl))
+			w.Write([]byte(originUrl))
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
