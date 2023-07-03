@@ -12,10 +12,12 @@ import (
 
 func RunServer() error {
 
+	// Парсинг переменных окружения
 	config.ParseFlags()
 
 	r := chi.NewRouter()
 
+	// Добавить конвеер для middleware
 	r.Get("/{id}", logger.WithLogging(compres.GzipMiddleware(handlers.ReplaceGET())))
 	r.Post("/api/shorten", logger.WithLogging(compres.GzipMiddleware(handlers.PostAPI())))
 	r.Post("/", logger.WithLogging(compres.GzipMiddleware(handlers.ReplacePOST())))

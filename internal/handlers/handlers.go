@@ -4,21 +4,30 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"math/rand"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/models"
+	"github.com/BelyaevEI/shortener/internal/storage"
+	"github.com/BelyaevEI/shortener/internal/utils"
 )
 
-// вместо БД пока мапы
-var short2long = make(map[string]string) //Словарь для получения полного URL по короткому
-var long2short = make(map[string]string) //Словарь для получения короткого URL по полному
-
 func ReplacePOST() http.HandlerFunc {
+
 	post := func(w http.ResponseWriter, r *http.Request) {
+
+		var (
+			LongShortUrl models.StorageURL
+			short_id     string
+		)
+		// Открываем файл на чтение/запись
+		f := storage.NewStorage()
+
+		defer f.Close()
+
+		storage := f.ReadAllURLS()
+
 		//Считать из тела запроса строку URL
 		longURL, err := io.ReadAll(r.Body)
 		if err != nil || string(longURL) == " " {
@@ -26,25 +35,29 @@ func ReplacePOST() http.HandlerFunc {
 			return
 		}
 
-		//Проверим наличие короткой ссылки по длинной, если ее нет
-		//то сгенерируем и запишем в словарь
-		if shortURL, ok := long2short[string(longURL)]; ok {
+		// Проверяем есть ли в файле ссылка, если нет, то сгенерируем,
+		// запишем в файл и отправим пользвоателю
+		if short_id = utils.TryFoundShortUrl(longURL, storage); short_id != " " {
+
+			short_url := config.ShortURL + "/" + short_id
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(shortURL))
+			w.Write([]byte(short_url))
+
 		} else {
-			short := generateRandomString(8)
-			// shortURL = "http://localhost:8080/" + short
 
-			shortURL = config.ShortURL + "/" + short
+			short_id = utils.GenerateRandomString(8)
+			LongShortUrl.OriginalURL = string(longURL)
+			LongShortUrl.ShortURL = short_id
+			f.WriteURL(&LongShortUrl) // Запись новой пары в файл
 
-			long2short[string(longURL)] = shortURL
-			short2long[short] = string(longURL)
+			short_url := config.ShortURL + "/" + short_id
 
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(shortURL))
+			w.Write([]byte(short_url))
 		}
+
 	}
 	return http.HandlerFunc(post)
 }
@@ -52,10 +65,19 @@ func ReplacePOST() http.HandlerFunc {
 func PostAPI() http.HandlerFunc {
 	post := func(w http.ResponseWriter, r *http.Request) {
 		var (
-			req      models.Request
-			shortURL string
-			buf      bytes.Buffer
+			req          models.Request
+			shortURL     string
+			buf          bytes.Buffer
+			LongShortUrl models.StorageURL
+			short_id     string
 		)
+
+		// Открываем файл на чтение/запись
+		f := storage.NewStorage()
+
+		defer f.Close()
+
+		storage := f.ReadAllURLS()
 
 		// читаем тело запроса
 		_, err := buf.ReadFrom(r.Body)
@@ -72,20 +94,17 @@ func PostAPI() http.HandlerFunc {
 
 		longURL := req.URL
 
-		//Проверим наличие короткой ссылки по длинной, если ее нет
-		//то сгенерируем и запишем в словарь
-		if s, ok := long2short[string(longURL)]; !ok {
+		// Проверяем есть ли в файле ссылка, если нет, то сгенерируем,
+		// запишем в файл и отправим пользвоателю
+		if short_id = utils.TryFoundShortUrl([]byte(longURL), storage); short_id == " " {
 
-			short := generateRandomString(8)
-
-			shortURL = config.ShortURL + "/" + short
-
-			long2short[string(longURL)] = shortURL
-			short2long[short] = string(longURL)
-
-		} else {
-			shortURL = s
+			short_id = utils.GenerateRandomString(8)
+			LongShortUrl.OriginalURL = longURL
+			LongShortUrl.ShortURL = short_id
+			f.WriteURL(&LongShortUrl) // Запись новой пары в файл
 		}
+
+		shortURL = config.ShortURL + "/" + short_id
 
 		// заполняем модель ответа
 		resp := models.Response{
@@ -111,49 +130,41 @@ func ReplaceGET() http.HandlerFunc {
 	get := func(w http.ResponseWriter, r *http.Request) {
 		var id string
 
-		//получим ID из запроса
-		idLong := r.URL.Path[1:]
-		// idLong := r.URL.Query().Get("id")
+		// Открываем файл на чтение/запись
+		f := storage.NewStorage()
 
-		if strings.ContainsRune(idLong, '/') {
-			id = strings.Split(idLong, "/")[0]
+		defer f.Close()
+
+		storage := f.ReadAllURLS()
+
+		//получим ID из запроса
+		short_id := r.URL.Path[1:]
+		// idLong := r.URL.Query().Get("id") не работает почему-то, не забудь разобраться
+
+		if strings.ContainsRune(short_id, '/') {
+			id = strings.Split(short_id, "/")[0]
 			if id == " " {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 		} else {
-			id = idLong
+			id = short_id
 			if id == " " {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 		}
 
-		//проверим по ID ссылку
-		if longURL, ok := short2long[id]; ok {
-			w.Header().Set("Location", longURL)
+		// Проверим, есть ли в файле нужная ссылка
+		// если ее нет, отправляем 400 пользователю
+		if origin_url := utils.TryFoundOrigUrl(id, storage); origin_url != " " {
+			w.Header().Set("Location", origin_url)
 			w.WriteHeader(http.StatusTemporaryRedirect)
-			w.Write([]byte(longURL))
+			w.Write([]byte(origin_url))
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
-			return
 		}
+
 	}
 	return http.HandlerFunc(get)
-}
-
-func generateRandomString(length int) string {
-	// Задаем символы, из которых будет состоять случайная строка
-	charSet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-	// Инициализируем генератор случайных чисел
-	rand.Seed(time.Now().UnixNano())
-
-	// Генерируем случайную строку
-	result := make([]byte, length)
-	for i := 0; i < length; i++ {
-		result[i] = charSet[rand.Intn(len(charSet))]
-	}
-
-	return string(result)
 }

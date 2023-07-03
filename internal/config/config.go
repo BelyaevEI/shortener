@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	FlagRunAddr string
-	ShortURL    string
+	FlagRunAddr     string
+	ShortURL        string
+	FileStoragePath string
 )
 
 func ParseFlags() {
@@ -19,6 +20,10 @@ func ParseFlags() {
 	// регистрируем переменную ShortURL
 	// как аргумент -b со значением http://localhost:8080/ по умолчанию
 	flag.StringVar(&ShortURL, "b", "http://localhost:8080", "response URL")
+
+	// регистрируем переменную FileStoragePath
+	// как аргумент -f со значением /tmp/short-url-db.json по умолчанию
+	flag.StringVar(&FileStoragePath, "f", "/tmp/short-url-db.json", "path to file storage")
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
@@ -32,6 +37,12 @@ func ParseFlags() {
 	// переопределим базовый адрес результирующего сокращенного URL если есть
 	if envShortURL := os.Getenv("BASE_URL"); envShortURL != "" {
 		ShortURL = envShortURL
+	}
+
+	// переопределим переменную из переменного окружения,
+	// если есть для пути сохранения файла
+	if envFileStoragePath := os.Getenv("FILE_STORAGE_PATH"); envFileStoragePath != "" {
+		FileStoragePath = envFileStoragePath
 	}
 
 }
