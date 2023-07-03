@@ -15,6 +15,13 @@ type compressWriter struct {
 	zw *gzip.Writer
 }
 
+func newCompressWriter(w http.ResponseWriter) *compressWriter {
+	return &compressWriter{
+		w:  w,
+		zw: gzip.NewWriter(w),
+	}
+}
+
 // Header implements http.ResponseWriter.
 func (c *compressWriter) Header() http.Header {
 	return c.w.Header()
@@ -25,19 +32,8 @@ func (c *compressWriter) Write(p []byte) (int, error) {
 	return c.zw.Write(p)
 }
 
-func newCompressWriter(w http.ResponseWriter) *compressWriter {
-	return &compressWriter{
-		w:  w,
-		zw: gzip.NewWriter(w),
-	}
-}
-
-func (c *compressWriter) Writer(p []byte) (int, error) {
-	return c.zw.Write(p)
-}
-
 func (c *compressWriter) WriteHeader(statusCode int) {
-	if statusCode < 300 {
+	if statusCode <= 307 {
 		c.w.Header().Set("Content-Encoding", "gzip")
 	}
 	c.w.WriteHeader(statusCode)
