@@ -47,14 +47,14 @@ func ReplacePOST() http.HandlerFunc {
 		} else {
 
 			shortid = utils.GenerateRandomString(8)
-			shortUrl := config.ShortURL + "/" + shortid
+			shortURL := config.ShortURL + "/" + shortid
 			LongShortURL.OriginalURL = string(longURL)
-			LongShortURL.ShortURL = shortUrl
+			LongShortURL.ShortURL = shortURL
 			f.WriteURL(&LongShortURL) // Запись новой пары в файл
 
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(shortUrl))
+			w.Write([]byte(shortURL))
 		}
 
 	}
