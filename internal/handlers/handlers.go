@@ -39,7 +39,7 @@ func ReplacePOST() http.HandlerFunc {
 		// запишем в файл и отправим пользвоателю
 		if shortid = utils.TryFoundShortURL(longURL, storage); shortid != " " {
 
-			shortURL := config.ShortURL + "/" + shortid
+			shortURL := shortid
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
 			w.Write([]byte(shortURL))
@@ -47,11 +47,11 @@ func ReplacePOST() http.HandlerFunc {
 		} else {
 
 			shortid = utils.GenerateRandomString(8)
+			shortURL := config.ShortURL + "/" + shortid
 			LongShortURL.OriginalURL = string(longURL)
-			LongShortURL.ShortURL = shortid
+			LongShortURL.ShortURL = shortURL
 			f.WriteURL(&LongShortURL) // Запись новой пары в файл
 
-			shortURL := config.ShortURL + "/" + shortid
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusCreated)
 			w.Write([]byte(shortURL))
@@ -98,12 +98,13 @@ func PostAPI() http.HandlerFunc {
 		if shortid = utils.TryFoundShortURL([]byte(longURL), storage); shortid == " " {
 
 			shortid = utils.GenerateRandomString(8)
+			shortURL = config.ShortURL + "/" + shortid
 			LongShortURL.OriginalURL = longURL
-			LongShortURL.ShortURL = shortid
+			LongShortURL.ShortURL = shortURL
 			f.WriteURL(&LongShortURL) // Запись новой пары в файл
 		}
 
-		shortURL = config.ShortURL + "/" + shortid
+		shortURL = shortid
 
 		// заполняем модель ответа
 		resp := models.Response{
