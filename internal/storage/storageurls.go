@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"strings"
 
+	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/models"
 )
 
@@ -17,8 +19,13 @@ type Storage struct {
 
 func NewStorage() *Storage {
 
+	//Будем считать, что в тестах будет путь /tmp/filename
+	dirFile := strings.Split(config.FileStoragePath, "/")
+
+	os.MkdirTemp(dirFile[0], dirFile[1])
+
 	// открываем файл для записи в конец
-	file, err := os.OpenFile("short-url-db.json", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile(dirFile[1], os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return &Storage{}
 	}
