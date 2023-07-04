@@ -20,19 +20,19 @@ type Storage struct {
 
 func New() *Storage {
 
-	fileps := config.FileStoragePath
+	dir := filepath.Dir(config.FileStoragePath)
 
 	//Будем считать, что в тестах будет путь /tmp/filename
-	if _, err := os.Stat(filepath.Dir(fileps)); os.IsNotExist(err) {
-		err = os.Mkdir(filepath.Dir(fileps), 0755)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.Mkdir(dir, 0755)
 		if err != nil {
-			log.Printf("Error: %s", err)
+			log.Fatalf("Error: %s", err)
 		}
 	}
 	// открываем файл для записи
-	file, err := os.OpenFile(fileps, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile(config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
-		log.Fatalf("Open file with error: %s", err)
+		log.Fatalf("Ошибка при открытии %s", err)
 	}
 
 	return &Storage{
