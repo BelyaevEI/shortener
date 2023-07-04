@@ -19,4 +19,5 @@ func GenerateRandomString(length int) string {
 	}
 
 	return string(result)
+
 }

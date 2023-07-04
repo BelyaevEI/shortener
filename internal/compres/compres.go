@@ -115,4 +115,5 @@ func GzipMiddleware(h http.HandlerFunc) http.HandlerFunc {
 		// передаём управление хендлеру
 		h.ServeHTTP(ow, r)
 	}
+
 }

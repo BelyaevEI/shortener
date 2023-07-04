@@ -89,4 +89,5 @@ func WithLogging(h http.HandlerFunc) http.HandlerFunc {
 	}
 	// возвращаем функционально расширенный хендлер
 	return http.HandlerFunc(logGet)
+
 }

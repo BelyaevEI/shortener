@@ -27,5 +27,4 @@ func RunServer() error {
 	r.Post("/", logger.WithLogging(compres.GzipMiddleware(handlers.ReplacePOST())))
 
 	return http.ListenAndServe(config.FlagRunAddr, r)
-
 }
