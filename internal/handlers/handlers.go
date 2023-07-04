@@ -23,7 +23,7 @@ func ReplacePOST() http.HandlerFunc {
 			shortURL     string
 		)
 		// Открываем файл на чтение/запись
-		f := storage.NewStorage()
+		f := storage.New()
 
 		defer f.Close()
 
@@ -74,7 +74,7 @@ func PostAPI() http.HandlerFunc {
 		)
 
 		// Открываем файл на чтение/запись
-		f := storage.NewStorage()
+		f := storage.New()
 
 		defer f.Close()
 
@@ -132,7 +132,7 @@ func ReplaceGET() http.HandlerFunc {
 		var id string
 
 		// Открываем файл на чтение/запись
-		f := storage.NewStorage()
+		f := storage.New()
 
 		defer f.Close()
 
@@ -144,13 +144,13 @@ func ReplaceGET() http.HandlerFunc {
 
 		if strings.ContainsRune(shortid, '/') {
 			id = strings.Split(shortid, "/")[0]
-			if id == " " {
+			if id == " " { // Если заменить на len(id) == 0?
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 		} else {
 			id = shortid
-			if id == " " {
+			if id == " " { // Если заменить на len(id) == 0?
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}

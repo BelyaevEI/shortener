@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
+	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/models"
@@ -16,10 +18,15 @@ type Storage struct {
 	reader  *bufio.Reader
 }
 
-func NewStorage() *Storage {
+func New() *Storage {
 
 	//Будем считать, что в тестах будет путь /tmp/filename
-
+	if _, err := os.Stat(filepath.Dir(config.FileStoragePath)); os.IsNotExist(err) {
+		err = os.Mkdir(filepath.Dir(config.FileStoragePath), 0755)
+		if err != nil {
+			log.Printf("Error: %s", err)
+		}
+	}
 	// открываем файл для записи в конец
 	file, err := os.OpenFile(config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
