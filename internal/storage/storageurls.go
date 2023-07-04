@@ -18,34 +18,28 @@ type Storage struct {
 	reader  *bufio.Reader
 }
 
-var (
-	Manage     Storage
-	storageURL []models.StorageURL
-)
+func New() *Storage {
 
-func Init() {
+	fileps := config.FileStoragePath
 
 	//Будем считать, что в тестах будет путь /tmp/filename
-	if _, err := os.Stat(filepath.Dir(config.FileStoragePath)); os.IsNotExist(err) {
-		err = os.Mkdir(filepath.Dir(config.FileStoragePath), 0755)
+	if _, err := os.Stat(filepath.Dir(fileps)); os.IsNotExist(err) {
+		err = os.Mkdir(filepath.Dir(fileps), 0755)
 		if err != nil {
 			log.Printf("Error: %s", err)
 		}
 	}
 	// открываем файл для записи
-	file, err := os.OpenFile(config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile(fileps, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("Open file with error: %s", err)
 	}
 
-	Manage = Storage{
+	return &Storage{
 		file:    file,
 		encoder: json.NewEncoder(file),
 		reader:  bufio.NewReader(file),
 	}
-
-	// Прочитаем содержимое файла
-	Manage.ReadAllURLS()
 }
 
 func (s *Storage) Close() error {
@@ -57,9 +51,12 @@ func (s *Storage) WriteURL(urls *models.StorageURL) error {
 	return s.encoder.Encode(&urls)
 }
 
-func (s *Storage) ReadAllURLS() {
+func (s *Storage) ReadAllURLS() []models.StorageURL {
 
-	var read [][]byte
+	var (
+		read       [][]byte
+		storageURL []models.StorageURL
+	)
 
 	// Чтение из файла
 	for {
@@ -78,24 +75,5 @@ func (s *Storage) ReadAllURLS() {
 			storageURL = append(storageURL, urls)
 		}
 	}
-}
-
-func (s *Storage) TryFoundOrigURL(shortURL string) (url string) {
-	for _, ur := range storageURL {
-		if ur.ShortURL == shortURL {
-			url = ur.OriginalURL
-		}
-	}
-	return url
-}
-
-func (s *Storage) TryFoundShortURL(u []byte) (url string) {
-	longURL := string(u)
-	for _, ur := range storageURL {
-		if ur.OriginalURL == longURL {
-			url = ur.ShortURL
-		}
-	}
-	return url
-
+	return storageURL
 }

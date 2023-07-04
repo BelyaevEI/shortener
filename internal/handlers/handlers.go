@@ -23,6 +23,13 @@ func ReplacePOST() http.HandlerFunc {
 			shortURL     string
 		)
 
+		f := storage.New()
+
+		defer f.Close()
+
+		//Читаем весь файл
+		storage := f.ReadAllURLS()
+
 		//Считать из тела запроса строку URL
 		longURL, err := io.ReadAll(r.Body)
 		if err != nil || string(longURL) == " " {
@@ -32,7 +39,7 @@ func ReplacePOST() http.HandlerFunc {
 
 		// Проверяем есть ли в файле ссылка, если нет, то сгенерируем,
 		// запишем в файл и отправим пользвоателю
-		if shortid = storage.Manage.TryFoundShortURL(longURL); shortid != "" {
+		if shortid = utils.TryFoundShortURL(longURL, storage); shortid != "" {
 
 			shortURL = shortid
 			w.Header().Set("Content-Type", "text/plain")
@@ -44,7 +51,7 @@ func ReplacePOST() http.HandlerFunc {
 			shortid = utils.GenerateRandomString(8)
 			LongShortURL.OriginalURL = string(longURL)
 			LongShortURL.ShortURL = shortid
-			storage.Manage.WriteURL(&LongShortURL) // Запись новой пары в файл
+			f.WriteURL(&LongShortURL) // Запись новой пары в файл
 
 			shortURL = config.ShortURL + "/" + shortid
 
@@ -67,6 +74,13 @@ func PostAPI() http.HandlerFunc {
 			shortid      string
 		)
 
+		f := storage.New()
+
+		defer f.Close()
+
+		//Читаем весь файл
+		storage := f.ReadAllURLS()
+
 		// читаем тело запроса
 		_, err := buf.ReadFrom(r.Body)
 		if err != nil {
@@ -84,12 +98,12 @@ func PostAPI() http.HandlerFunc {
 
 		// Проверяем есть ли в файле ссылка, если нет, то сгенерируем,
 		// запишем в файл и отправим пользвоателю
-		if shortid = storage.Manage.TryFoundShortURL([]byte(longURL)); shortid == "" {
+		if shortid = utils.TryFoundShortURL([]byte(longURL), storage); shortid == "" {
 
 			shortid = utils.GenerateRandomString(8)
 			LongShortURL.OriginalURL = longURL
 			LongShortURL.ShortURL = shortid
-			storage.Manage.WriteURL(&LongShortURL) // Запись новой пары в файл
+			f.WriteURL(&LongShortURL) // Запись новой пары в файл
 		}
 
 		shortURL = config.ShortURL + "/" + shortid
@@ -119,6 +133,13 @@ func ReplaceGET() http.HandlerFunc {
 
 		var id string
 
+		f := storage.New()
+
+		defer f.Close()
+
+		//Читаем весь файл
+		storage := f.ReadAllURLS()
+
 		//получим ID из запроса
 		shortid := r.URL.Path[1:]
 		// idLong := r.URL.Query().Get("id") не работает почему-то, не забудь разобраться
@@ -139,7 +160,7 @@ func ReplaceGET() http.HandlerFunc {
 
 		// Проверим, есть ли в файле нужная ссылка
 		// если ее нет, отправляем 400 пользователю
-		if originURL := storage.Manage.TryFoundOrigURL(id); originURL != "" {
+		if originURL := utils.TryFoundOrigURL(id, storage); originURL != "" {
 			w.Header().Set("Location", originURL)
 			w.WriteHeader(http.StatusTemporaryRedirect)
 			w.Write([]byte(originURL))

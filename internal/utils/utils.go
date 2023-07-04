@@ -3,6 +3,8 @@ package utils
 import (
 	"math/rand"
 	"time"
+
+	"github.com/BelyaevEI/shortener/internal/models"
 )
 
 func GenerateRandomString(length int) string {
@@ -20,4 +22,23 @@ func GenerateRandomString(length int) string {
 
 	return string(result)
 
+}
+
+func TryFoundShortURL(u []byte, s []models.StorageURL) (url string) {
+	longURL := string(u)
+	for _, ur := range s {
+		if ur.OriginalURL == longURL {
+			url = ur.ShortURL
+		}
+	}
+	return url
+}
+
+func TryFoundOrigURL(shortURL string, s []models.StorageURL) (url string) {
+	for _, ur := range s {
+		if ur.ShortURL == shortURL {
+			url = ur.OriginalURL
+		}
+	}
+	return url
 }
