@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/models"
 )
 
@@ -17,26 +18,34 @@ type Storage struct {
 	reader  *bufio.Reader
 }
 
-func New() *Storage {
+var (
+	Manage     Storage
+	storageURL []models.StorageURL
+)
+
+func Init() {
 
 	//Будем считать, что в тестах будет путь /tmp/filename
-	if _, err := os.Stat(filepath.Dir("/tmp/short-url-db.json")); os.IsNotExist(err) {
-		err = os.Mkdir(filepath.Dir("/tmp/short-url-db.json"), 0755)
+	if _, err := os.Stat(filepath.Dir(config.FileStoragePath)); os.IsNotExist(err) {
+		err = os.Mkdir(filepath.Dir(config.FileStoragePath), 0755)
 		if err != nil {
 			log.Printf("Error: %s", err)
 		}
 	}
 	// открываем файл для записи
-	file, err := os.OpenFile("short-url-db.json", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile(config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		return &Storage{}
+		log.Fatalf("Open file with error: %s", err)
 	}
 
-	return &Storage{
+	Manage = Storage{
 		file:    file,
 		encoder: json.NewEncoder(file),
 		reader:  bufio.NewReader(file),
 	}
+
+	// Прочитаем содержимое файла
+	Manage.ReadAllURLS()
 }
 
 func (s *Storage) Close() error {
@@ -48,12 +57,10 @@ func (s *Storage) WriteURL(urls *models.StorageURL) error {
 	return s.encoder.Encode(&urls)
 }
 
-func (s *Storage) ReadAllURLS() []models.StorageURL {
+func (s *Storage) ReadAllURLS() {
 
-	var (
-		read        [][]byte
-		storageURLS []models.StorageURL
-	)
+	var read [][]byte
+
 	// Чтение из файла
 	for {
 		data, err := s.reader.ReadBytes('\n')
@@ -68,8 +75,26 @@ func (s *Storage) ReadAllURLS() []models.StorageURL {
 		urls := models.StorageURL{}
 		err := json.Unmarshal(line, &urls)
 		if err == nil {
-			storageURLS = append(storageURLS, urls)
+			storageURL = append(storageURL, urls)
 		}
 	}
-	return storageURLS
+}
+
+func (s *Storage) TryFoundOrigURL(shortURL string) (url string) {
+	for _, ur := range storageURL {
+		if ur.ShortURL == shortURL {
+			url = ur.OriginalURL
+		}
+	}
+	return url
+}
+
+func (s *Storage) TryFoundShortURL(u []byte) (url string) {
+	longURL := string(u)
+	for _, ur := range storageURL {
+		if ur.OriginalURL == longURL {
+			url = ur.ShortURL
+		}
+	}
+	return url
 }

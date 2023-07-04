@@ -7,6 +7,7 @@ import (
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/handlers"
 	"github.com/BelyaevEI/shortener/internal/logger"
+	"github.com/BelyaevEI/shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -14,6 +15,9 @@ func RunServer() error {
 
 	// Парсинг переменных окружения
 	config.ParseFlags()
+
+	// Инициализация хранилища
+	storage.Init()
 
 	r := chi.NewRouter()
 
