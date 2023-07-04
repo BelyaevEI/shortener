@@ -32,7 +32,6 @@ func TryFoundOrigURL(shortURL string, s []models.StorageURL) (url string) {
 	}
 	return url
 }
-
 func TryFoundShortURL(u []byte, s []models.StorageURL) (url string) {
 	longURL := string(u)
 	for _, ur := range s {

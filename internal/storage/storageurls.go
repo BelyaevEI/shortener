@@ -55,7 +55,6 @@ func (s *Storage) ReadAllURLS() []models.StorageURL {
 		read        [][]byte
 		storageURLS []models.StorageURL
 	)
-
 	// Чтение из файла
 	for {
 		data, err := s.reader.ReadBytes('\n')

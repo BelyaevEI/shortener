@@ -186,7 +186,6 @@ func TestReplaceGET(t *testing.T) {
 		//Делаем проверки
 		//Проверка ответа сервера
 		assert.Equal(t, test1.code, result.StatusCode)
-
 	})
 
 }

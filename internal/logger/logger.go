@@ -62,7 +62,6 @@ func WithLogging(h http.HandlerFunc) http.HandlerFunc {
 			ResponseWriter: w, // встраиваем оригинальный http.ResponseWriter
 			responseData:   responseData,
 		}
-
 		//Время запуска
 		start := time.Now()
 

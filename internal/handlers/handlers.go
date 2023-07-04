@@ -165,7 +165,6 @@ func ReplaceGET() http.HandlerFunc {
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
-
 	}
 	return http.HandlerFunc(get)
 }
