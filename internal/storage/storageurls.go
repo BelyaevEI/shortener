@@ -22,17 +22,19 @@ func New() *Storage {
 
 	dir := filepath.Dir(config.FileStoragePath)
 
-	//Будем считать, что в тестах будет путь /tmp/filename
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.Mkdir(dir, 0755)
 		if err != nil {
 			log.Fatalf("Error: %s", err)
+			return nil
 		}
 	}
+
 	// открываем файл для записи
 	file, err := os.OpenFile(config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		log.Fatalf("Ошибка при открытии %s", err)
+		return nil
 	}
 
 	return &Storage{

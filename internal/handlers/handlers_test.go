@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	// "github.com/go-resty/resty/v2"
+	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -39,6 +39,9 @@ func TestReplacePOST(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 	}
+
+	// Парсинг переменных окружения
+	config.ParseFlags()
 
 	t.Run(test1.name, func(t *testing.T) {
 		//Создаем тело запроса
@@ -124,6 +127,9 @@ func TestPostAPI(t *testing.T) {
 		body:         `{"url":"https://practicum.yandex.ru/"}`,
 	}
 
+	// // Парсинг переменных окружения
+	// config.ParseFlags()
+
 	t.Run(test1.name, func(t *testing.T) {
 
 		// Преобразуем JSON объект в байтовый массив
@@ -160,6 +166,9 @@ func TestReplaceGET(t *testing.T) {
 		name string
 		code int
 	}
+
+	// // Парсинг переменных окружения
+	// config.ParseFlags()
 
 	//Сформируем варианты для тестирования
 	test1 := test{name: "Empty ID in URL", code: http.StatusBadRequest}
