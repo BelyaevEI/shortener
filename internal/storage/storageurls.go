@@ -18,9 +18,9 @@ type Storage struct {
 	reader  *bufio.Reader
 }
 
-func New() *Storage {
+func New(cfg config.Parameters) *Storage {
 
-	dir := filepath.Dir(config.FileStoragePath)
+	dir := filepath.Dir(cfg.FileStoragePath)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.Mkdir(dir, 0755)
@@ -31,7 +31,7 @@ func New() *Storage {
 	}
 
 	// открываем файл для записи
-	file, err := os.OpenFile(config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
+	file, err := os.OpenFile(cfg.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		log.Fatalf("Ошибка при открытии %s", err)
 		return nil
@@ -45,7 +45,6 @@ func New() *Storage {
 }
 
 func (s *Storage) Close() error {
-	// закрываем файл
 	return s.file.Close()
 }
 

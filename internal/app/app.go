@@ -3,24 +3,43 @@ package app
 import (
 	"net/http"
 
-	"github.com/BelyaevEI/shortener/internal/compres"
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/handlers"
-	"github.com/BelyaevEI/shortener/internal/logger"
+	"github.com/BelyaevEI/shortener/internal/route"
+	"github.com/BelyaevEI/shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 )
 
+type App struct {
+	cfg    config.Parameters
+	handle handlers.Handlers
+	chi    *chi.Mux
+}
+
 func RunServer() error {
 
+	//Инициализируем сервис
+	app := NewApp()
+	return http.ListenAndServe(app.cfg.FlagRunAddr, app.chi)
+}
+
+func NewApp() *App {
+
 	// Парсинг переменных окружения
-	config.ParseFlags()
+	cfg := config.ParseFlags()
 
-	r := chi.NewRouter()
+	//Работа с файлом
+	s := storage.New(cfg)
 
-	// Добавить конвеер для middleware не забудь
-	r.Get("/{id}", logger.WithLogging(compres.GzipMiddleware(handlers.ReplaceGET())))
-	r.Post("/api/shorten", logger.WithLogging(compres.GzipMiddleware(handlers.PostAPI())))
-	r.Post("/", logger.WithLogging(compres.GzipMiddleware(handlers.ReplacePOST())))
+	//Создаем обьект handle
+	h := handlers.New(cfg, s)
 
-	return http.ListenAndServe(config.FlagRunAddr, r)
+	// Создаем route
+	r := route.New(h)
+
+	return &App{
+		cfg:    cfg,
+		handle: h,
+		chi:    r,
+	}
 }
