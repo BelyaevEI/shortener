@@ -55,6 +55,7 @@ func Gzip(h http.Handler) http.Handler {
 
 // Middleware - мидлварь логер
 func Logger(h http.Handler) http.Handler {
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// создаём предустановленный регистратор zap
