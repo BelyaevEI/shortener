@@ -1,4 +1,4 @@
-package midlleware
+package midllewares
 
 import (
 	"net/http"

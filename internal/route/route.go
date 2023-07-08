@@ -8,10 +8,9 @@ import (
 func New(h handlers.Handlers) *chi.Mux {
 
 	r := chi.NewRouter()
-
 	//Укажем middleware
-	r.Use(middleware.Gzip)
-	r.Use(middleware.Logger)
+	r.Use(middlewares.Gzip)
+	r.Use(middlewares.Logger)
 
 	r.Get("/{id}", h.ReplaceGET)
 	r.Post("/api/shorten", h.PostAPI)
