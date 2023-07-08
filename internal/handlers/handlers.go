@@ -44,7 +44,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if h.FileStoragePath != " " {
+	if len(h.FileStoragePath) != 0 {
 
 		//Читаем весь файл
 		storage := h.s.ReadAllURLS()
@@ -115,7 +115,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 
 	longURL := req.URL
 
-	if h.FileStoragePath != "" {
+	if len(h.FileStoragePath) != 0 {
 
 		//Читаем весь файл
 		storage := h.s.ReadAllURLS()
