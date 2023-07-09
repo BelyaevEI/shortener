@@ -41,7 +41,7 @@ func TestReplacePOST(t *testing.T) {
 
 	// Парсинг переменных окружения
 	cfg := config.ParseFlags()
-	cfg.FileStoragePath = ""
+	cfg.FileStoragePath = " "
 
 	//Создаем обьект handle
 	h := New(cfg, nil)

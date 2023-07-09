@@ -20,6 +20,10 @@ type Storage struct {
 
 func New(cfg config.Parameters) *Storage {
 
+	if cfg.FileStoragePath == " " {
+		return nil
+	}
+
 	dir := filepath.Dir(cfg.FileStoragePath)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -33,7 +37,7 @@ func New(cfg config.Parameters) *Storage {
 	// открываем файл для записи
 	file, err := os.OpenFile(cfg.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
-		log.Fatalf("Ошибка при открытии %s", err)
+		log.Fatalf("Ошибка при открытии %s", cfg.FileStoragePath)
 		return nil
 	}
 
@@ -65,6 +69,7 @@ func (s *Storage) ReadAllURLS() []models.StorageURL {
 		if err == io.EOF {
 			break
 		}
+
 		read = append(read, data)
 	}
 

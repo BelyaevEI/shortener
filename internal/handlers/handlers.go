@@ -19,7 +19,7 @@ var long2short = make(map[string]string) //Словарь для получен�
 type Handlers struct {
 	FileStoragePath string
 	ShortURL        string
-	s               storage.Storage
+	s               *storage.Storage
 }
 
 func New(cfg config.Parameters, s *storage.Storage) Handlers {
@@ -44,7 +44,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(h.FileStoragePath) != 0 {
+	if h.FileStoragePath != " " {
 
 		//Читаем весь файл
 		storage := h.s.ReadAllURLS()
@@ -115,7 +115,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 
 	longURL := req.URL
 
-	if len(h.FileStoragePath) != 0 {
+	if h.FileStoragePath == " " {
 
 		//Читаем весь файл
 		storage := h.s.ReadAllURLS()
@@ -190,7 +190,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(h.FileStoragePath) != 0 {
+	if h.FileStoragePath != " " {
 
 		//Читаем весь файл
 		storage := h.s.ReadAllURLS()
