@@ -13,13 +13,15 @@ import (
 	"github.com/BelyaevEI/shortener/internal/utils"
 )
 
-var short2long = make(map[string]string) //Словарь для получения полного URL по короткому
-var long2short = make(map[string]string) //Словарь для получения короткого URL по полному
+// var short2long = make(map[string]string) //Словарь для получения полного URL по короткому
+// var long2short = make(map[string]string) //Словарь для получения короткого URL по полному
 
 type Handlers struct {
 	FileStoragePath string
 	ShortURL        string
 	Config          config.Parameters
+	short2long      map[string]string
+	long2short      map[string]string
 }
 
 func New(cfg config.Parameters) Handlers {
@@ -27,6 +29,8 @@ func New(cfg config.Parameters) Handlers {
 		FileStoragePath: cfg.FileStoragePath,
 		ShortURL:        cfg.ShortURL,
 		Config:          cfg,
+		short2long:      make(map[string]string),
+		long2short:      make(map[string]string),
 	}
 }
 
@@ -76,14 +80,14 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 
-		if shortURL, ok := long2short[string(longURL)]; ok {
+		if shortURL, ok := h.long2short[string(longURL)]; ok {
 			utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 		} else {
 			short := utils.GenerateRandomString(8)
 			shortURL = h.ShortURL + "/" + short
 
-			long2short[string(longURL)] = shortURL
-			short2long[short] = string(longURL)
+			h.long2short[string(longURL)] = shortURL
+			h.short2long[short] = string(longURL)
 
 			utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 		}
@@ -151,15 +155,15 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		if shortURL, ok := long2short[string(longURL)]; ok {
+		if shortURL, ok := h.long2short[string(longURL)]; ok {
 			utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 		} else {
 			short := utils.GenerateRandomString(8)
 
 			shortURL = h.ShortURL + "/" + short
 
-			long2short[string(longURL)] = shortURL
-			short2long[short] = string(longURL)
+			h.long2short[string(longURL)] = shortURL
+			h.short2long[short] = string(longURL)
 
 			utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 		}
@@ -207,7 +211,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		//проверим по ID ссылку
-		if longURL, ok := short2long[id]; ok {
+		if longURL, ok := h.short2long[id]; ok {
 			utils.Response(w, "Location", longURL, longURL, http.StatusTemporaryRedirect)
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
