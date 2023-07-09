@@ -19,7 +19,7 @@ type Storage struct {
 }
 
 func New(cfg config.Parameters) *Storage {
-
+	// Если флаг указан -f " ", то работа с файлом отключается
 	if cfg.FileStoragePath == " " {
 		return nil
 	}

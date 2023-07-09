@@ -26,6 +26,7 @@ func New(cfg config.Parameters, s *storage.Storage) Handlers {
 	return Handlers{
 		FileStoragePath: cfg.FileStoragePath,
 		ShortURL:        cfg.ShortURL,
+		s:               s,
 	}
 }
 
@@ -115,7 +116,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 
 	longURL := req.URL
 
-	if h.FileStoragePath == " " {
+	if h.FileStoragePath != " " {
 
 		//Читаем весь файл
 		storage := h.s.ReadAllURLS()
