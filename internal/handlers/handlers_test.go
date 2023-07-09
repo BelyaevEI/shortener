@@ -44,7 +44,7 @@ func TestReplacePOST(t *testing.T) {
 	cfg.FileStoragePath = " "
 
 	//Создаем обьект handle
-	h := New(cfg, nil)
+	h := New(cfg)
 
 	t.Run(test1.name, func(t *testing.T) {
 		//Создаем тело запроса
@@ -109,99 +109,4 @@ func TestReplacePOST(t *testing.T) {
 		assert.Equal(t, test2.want.code, result.StatusCode)
 
 	})
-
 }
-
-// func TestPostAPI(t *testing.T) {
-
-// 	//Структура запроса
-// 	type test struct {
-// 		name         string // добавляем название тестов
-// 		method       string
-// 		expectedCode int
-// 		body         string
-// 	}
-
-// 	test1 := test{
-// 		name:         "Simple test PostAPI",
-// 		method:       http.MethodPost,
-// 		expectedCode: http.StatusCreated,
-// 		body:         `{"url":"https://practicum.yandex.ru/"}`,
-// 	}
-
-// 	// Парсинг переменных окружения
-// 	cfg := config.ParseFlags()
-
-// 	//Создаем обьект handle
-// 	h := New(cfg, nil)
-
-// 	t.Run(test1.name, func(t *testing.T) {
-
-// 		// Преобразуем JSON объект в байтовый массив
-// 		jsonData := []byte(test1.body)
-
-// 		request, _ := http.NewRequest(http.MethodPost, "/api/shorten", bytes.NewBuffer(jsonData))
-
-// 		//Устанавливаем заголовок
-// 		request.Header.Set("Content-Type", "application/json")
-
-// 		//Создаем рекордер для записи ответа
-// 		responseRecorder := httptest.NewRecorder()
-
-// 		//Обрабатываем запрос
-// 		h.PostAPI(responseRecorder, request)
-
-// 		//Получаем ответ
-// 		result := responseRecorder.Result()
-
-// 		defer result.Body.Close()
-
-// 		//Делаем проверки
-// 		//Проверка ответа сервера
-// 		assert.Equal(t, test1.expectedCode, result.StatusCode)
-
-// 	})
-// }
-
-// func TestReplaceGET(t *testing.T) {
-
-// 	//Структура запроса
-// 	type test struct {
-// 		name string
-// 		code int
-// 	}
-
-// 	// Парсинг переменных окружения
-// 	cfg := config.ParseFlags()
-
-// 	//Работа с файлом
-// 	s := storage.New(cfg)
-
-// 	//Создаем обьект handle
-// 	h := New(cfg, s)
-
-// 	//Сформируем варианты для тестирования
-// 	test1 := test{name: "Empty ID in URL", code: http.StatusBadRequest}
-
-// 	t.Run(test1.name, func(t *testing.T) {
-
-// 		//Создаем сам запрос
-// 		request := httptest.NewRequest(http.MethodGet, "/asd/", nil)
-
-// 		//Создаем рекордер для записи ответа
-// 		responseRecorder := httptest.NewRecorder()
-
-// 		//Обрабатываем запрос
-// 		h.ReplaceGET(responseRecorder, request)
-
-// 		//Получаем ответ
-// 		result := responseRecorder.Result()
-
-// 		defer result.Body.Close()
-
-// 		//Делаем проверки
-// 		//Проверка ответа сервера
-// 		assert.Equal(t, test1.code, result.StatusCode)
-// 	})
-
-// }

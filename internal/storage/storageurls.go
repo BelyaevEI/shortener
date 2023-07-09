@@ -37,7 +37,7 @@ func New(cfg config.Parameters) *Storage {
 	// открываем файл для записи
 	file, err := os.OpenFile(cfg.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
-		log.Fatalf("Ошибка при открытии %s", cfg.FileStoragePath)
+		log.Fatalf("Ошибка при открытии %s", err)
 		return nil
 	}
 
