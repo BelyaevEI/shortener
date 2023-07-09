@@ -60,9 +60,6 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		if shortid = utils.TryFoundShortURL(longURL, storage); shortid != "" {
 
 			shortURL = h.ShortURL + "/" + shortid
-			// w.Header().Set("Content-Type", "text/plain")
-			// w.WriteHeader(http.StatusCreated)
-			// w.Write([]byte(shortURL))
 			utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 
 		} else {
@@ -76,7 +73,9 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 			utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 		}
+
 	} else {
+
 		if shortURL, ok := long2short[string(longURL)]; ok {
 			utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 		} else {
@@ -201,9 +200,6 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 		// Проверим, есть ли в файле нужная ссылка
 		// если ее нет, отправляем 400 пользователю
 		if originURL := utils.TryFoundOrigURL(id, storage); originURL != "" {
-			w.Header().Set("Location", originURL)
-			w.WriteHeader(http.StatusTemporaryRedirect)
-			w.Write([]byte(originURL))
 			utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
