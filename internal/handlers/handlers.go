@@ -72,7 +72,6 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 			w.Write([]byte(shortURL))
 		}
-		h.s.Close()
 	} else {
 		if shortURL, ok := long2short[string(longURL)]; ok {
 			w.Header().Set("Content-Type", "text/plain")
@@ -148,7 +147,6 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		h.s.Close()
 	} else {
 		if shortURL, ok := long2short[string(longURL)]; ok {
 			w.Header().Set("Content-Type", "text/plain")
@@ -176,16 +174,15 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	//получим ID из запроса
 	shortid := r.URL.Path[1:]
 
-	// idLong := r.URL.Query().Get("id") не работает почему-то, не забудь разобраться
 	if strings.ContainsRune(shortid, '/') {
 		id = strings.Split(shortid, "/")[0]
-		if len(id) == 0 { // Если заменить на len(id) == 0?
+		if len(id) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	} else {
 		id = shortid
-		if len(id) == 0 { // Если заменить на len(id) == 0?
+		if len(id) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -205,7 +202,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
-		h.s.Close()
+
 	} else {
 		//проверим по ID ссылку
 		if longURL, ok := short2long[id]; ok {
