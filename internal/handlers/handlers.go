@@ -211,7 +211,6 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
-
 	} else {
 		//проверим по ID ссылку
 		if longURL, ok := h.short2long[id]; ok {
