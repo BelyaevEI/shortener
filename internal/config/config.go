@@ -9,6 +9,7 @@ type Parameters struct {
 	FlagRunAddr     string
 	ShortURL        string
 	FileStoragePath string
+	DBStoragePath   string
 }
 
 func ParseFlags() Parameters {
@@ -17,6 +18,7 @@ func ParseFlags() Parameters {
 		flagRunAddr     string
 		shortURL        string
 		fileStoragePath string
+		dbStoragePath   string
 	)
 
 	// регистрируем переменную FlagRunAddr
@@ -30,6 +32,10 @@ func ParseFlags() Parameters {
 	// регистрируем переменную FileStoragePath
 	// как аргумент -f со значением /tmp/short-url-db.json по умолчанию
 	flag.StringVar(&fileStoragePath, "f", "/tmp/short-url-db.json", "path to file storage")
+
+	// регистрируем переменную DBStoragePath
+	// как аргумент -d со значением http://localhost:8080/ по умолчанию
+	flag.StringVar(&dbStoragePath, "d", "", "path to connect DB")
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
@@ -51,9 +57,16 @@ func ParseFlags() Parameters {
 		fileStoragePath = envFileStoragePath
 	}
 
+	// переопределим переменную из переменного окружения,
+	// если есть для пути коннекта к БД
+	if envDBStoragePath := os.Getenv("DATABASE_DSN"); envDBStoragePath != "" {
+		dbStoragePath = envDBStoragePath
+	}
+
 	return Parameters{
 		FlagRunAddr:     flagRunAddr,
 		ShortURL:        shortURL,
 		FileStoragePath: fileStoragePath,
+		DBStoragePath:   dbStoragePath,
 	}
 }

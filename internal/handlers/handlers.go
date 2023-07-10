@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/BelyaevEI/shortener/internal/config"
+	"github.com/BelyaevEI/shortener/internal/database"
 	"github.com/BelyaevEI/shortener/internal/models"
 	"github.com/BelyaevEI/shortener/internal/storage"
 	"github.com/BelyaevEI/shortener/internal/utils"
@@ -18,6 +19,7 @@ import (
 
 type Handlers struct {
 	FileStoragePath string
+	DBStoragePath   string
 	ShortURL        string
 	Config          config.Parameters
 	short2long      map[string]string
@@ -27,6 +29,7 @@ type Handlers struct {
 func New(cfg config.Parameters) Handlers {
 	return Handlers{
 		FileStoragePath: cfg.FileStoragePath,
+		DBStoragePath:   cfg.DBStoragePath,
 		ShortURL:        cfg.ShortURL,
 		Config:          cfg,
 		short2long:      make(map[string]string),
@@ -218,4 +221,20 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
+
+	db, err := database.Connect(h.Config)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := db.Ping(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
