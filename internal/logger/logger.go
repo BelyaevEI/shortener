@@ -15,10 +15,15 @@ type (
 
 	// добавляем реализацию http.ResponseWriter
 	LoggResponse struct {
-		http.ResponseWriter // встраиваем оригинальный http.ResponseWriter
-		RespData            *ResponseDatas
+		ResponseWriter http.ResponseWriter // встраиваем оригинальный http.ResponseWriter
+		RespData       *ResponseDatas
 	}
 )
+
+// Header implements http.ResponseWriter.
+func (LoggResponse) Header() http.Header {
+	panic("unimplemented")
+}
 
 func (r LoggResponse) Write(b []byte) (int, error) {
 

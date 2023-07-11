@@ -95,7 +95,7 @@ func Logger(h http.Handler) http.Handler {
 		duration := time.Since(start)
 
 		// отправляем сведения о запросе в zap
-		sugar.Infoln(
+		sugar.Info(
 			"uri", uri,
 			"method", method,
 			"status", responseData.Status, // получаем перехваченный код статуса ответа
