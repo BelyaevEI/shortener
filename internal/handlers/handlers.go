@@ -52,6 +52,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
+
 	var (
 		req      models.Request
 		shortURL string
@@ -130,7 +131,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
-	if err := h.storage.PingDB(); err != nil {
+	if err := h.storage.Ping(); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
