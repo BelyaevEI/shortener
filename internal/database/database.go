@@ -17,6 +17,13 @@ func New(DBpath string) *database {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	_, err = db.Exec("create table IF NOT EXISTS storage_urls(short text not null, long text not null)")
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
 	return &database{DBpath: DBpath,
 		db: db}
 }
