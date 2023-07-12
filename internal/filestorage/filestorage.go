@@ -94,3 +94,7 @@ func (s *filestorage) Get(inputURL string) string {
 	}
 	return ""
 }
+
+func (s *filestorage) Ping() error {
+	panic("No implemention")
+}

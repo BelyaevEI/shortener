@@ -128,18 +128,12 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
-// 	db, err := database.Connect(h.Config)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
+	if err := h.storage.PingDB(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-// 	if err := db.Ping(); err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.WriteHeader(http.StatusOK)
-// }
+	w.WriteHeader(http.StatusOK)
+}

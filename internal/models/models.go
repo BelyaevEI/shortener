@@ -17,5 +17,6 @@ type (
 	Storage interface {
 		Save(url1, url2 string) error
 		Get(inputURL string) string
+		Ping() error
 	}
 )

@@ -44,7 +44,7 @@ func TestReplacePOST(t *testing.T) {
 	cfg := config.ParseFlags()
 	cfg.FileStoragePath = " "
 
-	storage := storage.Init(cfg.FileStoragePath)
+	storage := storage.Init(cfg.FileStoragePath, "")
 	//Создаем обьект handle
 	h := New(cfg.ShortURL, storage)
 
