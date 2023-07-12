@@ -25,8 +25,8 @@ func GenerateRandomString(length int) string {
 
 }
 
-func TryFoundShortURL(u []byte, s []models.StorageURL) (url string) {
-	longURL := string(u)
+func TryFoundShortURL(longURL string, s []models.StorageURL) (url string) {
+
 	for _, ur := range s {
 		if ur.OriginalURL == longURL {
 			url = ur.ShortURL
