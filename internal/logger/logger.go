@@ -20,9 +20,8 @@ type (
 	}
 )
 
-// Header implements http.ResponseWriter.
-func (*LoggResponse) Header() http.Header {
-	panic("unimplemented")
+func (r LoggResponse) Header() http.Header {
+	return r.Writer.Header()
 }
 
 func (r LoggResponse) Write(b []byte) (int, error) {
