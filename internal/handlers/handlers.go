@@ -18,9 +18,9 @@ type Handlers struct {
 	storage  *storage.Storage
 }
 
-func New(shortUrl string, storage *storage.Storage) Handlers {
+func New(shortURL string, storage *storage.Storage) Handlers {
 	return Handlers{
-		shortURL: shortUrl,
+		shortURL: shortURL,
 		storage:  storage,
 	}
 }
