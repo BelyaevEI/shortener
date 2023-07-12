@@ -35,7 +35,7 @@ func ParseFlags() parameters {
 
 	// регистрируем переменную DBpath
 	// как аргумент -d со значением
-	flag.StringVar(&dbpath, "f", "", "path to database storage")
+	flag.StringVar(&dbpath, "d", "", "path to database storage")
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
