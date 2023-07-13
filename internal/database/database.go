@@ -29,11 +29,28 @@ func New(DBpath string) *database {
 }
 
 func (d *database) Save(url1, url2 string) error {
-	panic("No Implement")
+	_, err := d.db.Exec("append into storage_urls(short, long) values ($1, $2)", url1, url2)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (d *database) Get(inputURL string) string {
-	panic("No Implement")
+
+	var foundURL string
+
+	row1 := d.db.QueryRow("select long from storage_urls where short=$1", inputURL)
+	if err := row1.Scan(&foundURL); err != nil {
+		return foundURL
+	}
+
+	row2 := d.db.QueryRow("select short from storage_urls where long=$1", inputURL)
+	if err := row2.Scan(&foundURL); err != nil {
+		return foundURL
+	}
+
+	return ""
 }
 
 func (d *database) Ping() error {

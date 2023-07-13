@@ -47,6 +47,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 	}
+
 	shortURL = h.shortURL + "/" + shortid
 	utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 }
