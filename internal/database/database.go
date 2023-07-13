@@ -29,7 +29,7 @@ func New(DBpath string) *database {
 }
 
 func (d *database) Save(url1, url2 string) error {
-	_, err := d.db.Exec("append into storage_urls(short, long) values ($1, $2)", url1, url2)
+	_, err := d.db.Exec("insert into storage_urls(short, long) values ($1, $2)", url1, url2)
 	if err != nil {
 		return err
 	}
