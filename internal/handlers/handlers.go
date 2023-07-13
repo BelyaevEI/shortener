@@ -47,11 +47,13 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 	}
+
 	shortURL = h.shortURL + "/" + shortid
 	utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 }
 
 func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
+
 	var (
 		req      models.Request
 		shortURL string
@@ -128,18 +130,12 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
-// 	db, err := database.Connect(h.Config)
-// 	if err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
+	if err := h.storage.Ping(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
-// 	if err := db.Ping(); err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.WriteHeader(http.StatusOK)
-// }
+	w.WriteHeader(http.StatusOK)
+}

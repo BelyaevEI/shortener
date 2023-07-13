@@ -20,3 +20,7 @@ func (c *chache) Save(url1, url2 string) error {
 	c.storageURL[url2] = url1
 	return nil
 }
+
+func (c *chache) Ping() error {
+	panic("No implemention")
+}
