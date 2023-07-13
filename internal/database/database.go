@@ -41,12 +41,12 @@ func (d *database) Get(inputURL string) string {
 	var foundURL string
 
 	row1 := d.db.QueryRow("select long from storage_urls where short=$1", inputURL)
-	if err := row1.Scan(&foundURL); err != nil {
+	if err := row1.Scan(&foundURL); err == nil {
 		return foundURL
 	}
 
 	row2 := d.db.QueryRow("select short from storage_urls where long=$1", inputURL)
-	if err := row2.Scan(&foundURL); err != nil {
+	if err := row2.Scan(&foundURL); err == nil {
 		return foundURL
 	}
 
