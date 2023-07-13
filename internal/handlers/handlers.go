@@ -1,101 +1,145 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
-	"math/rand"
+	"log"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/BelyaevEI/shortener/internal/config"
+	"github.com/BelyaevEI/shortener/internal/models"
+	"github.com/BelyaevEI/shortener/internal/storage"
+	"github.com/BelyaevEI/shortener/internal/utils"
 )
 
-// Вынести в отдельный каталог?
-var short2long = make(map[string]string) //Словарь для получения полного URL по короткому
-var long2short = make(map[string]string) //Словарь для получения короткого URL по полному
+type Handlers struct {
+	shortURL string
+	storage  *storage.Storage
+}
 
-func ReplacePOST(w http.ResponseWriter, r *http.Request) {
+func New(shortURL string, storage *storage.Storage) Handlers {
+	return Handlers{
+		shortURL: shortURL,
+		storage:  storage,
+	}
+}
 
-	//Считать из тела запроса строку URL
+func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
+
+	var (
+		shortid  string
+		shortURL string
+	)
+
+	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
 	if err != nil || string(longURL) == " " {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	//Не проходит тесты первого инкремента
-	// //проверим что ссылка передается в Header с нужным типом
-	// contentType := r.Header.Get("Content-Type")
-	// if contentType != "text/plain" {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
-
-	//Проверим наличие короткой ссылки по длинной, если ее нет
-	//то сгенерируем и запишем в словарь
-	if shortURL, ok := long2short[string(longURL)]; ok {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(shortURL))
-	} else {
-		short := generateRandomString(8)
-		// shortURL = "http://localhost:8080/" + short
-
-		shortURL = config.ShortURL + "/" + short
-
-		long2short[string(longURL)] = shortURL
-		short2long[short] = string(longURL)
-
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(shortURL))
+	// Проверяем существование ссылки
+	if shortid = h.storage.GetURL(string(longURL)); shortid == "" {
+		shortid = utils.GenerateRandomString(8)
+		err := h.storage.SaveURL(shortid, string(longURL))
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+	shortURL = h.shortURL + "/" + shortid
+	utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
 }
 
-func ReplaceGET(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
+	var (
+		req      models.Request
+		shortURL string
+		buf      bytes.Buffer
+		shortid  string
+	)
 
-	var id string
+	// читаем тело запроса
+	_, err := buf.ReadFrom(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	//получим ID из запроса
-	idLong := r.URL.Path[1:]
+	// десериализуем JSON
+	if err = json.Unmarshal(buf.Bytes(), &req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	if strings.ContainsRune(idLong, '/') {
-		id = strings.Split(idLong, "/")[0]
-		if id == " " {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	} else {
-		id = idLong
-		if id == " " {
-			w.WriteHeader(http.StatusBadRequest)
-			return
+	longURL := req.URL
+
+	if shortid = h.storage.GetURL(longURL); shortid == "" {
+		shortid = utils.GenerateRandomString(8)
+		err := h.storage.SaveURL(shortid, longURL)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 
-	//проверим по ID ссылку
-	if longURL, ok := short2long[id]; ok {
-		w.Header().Set("Location", longURL)
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		w.Write([]byte(longURL))
-	} else {
+	shortURL = h.shortURL + "/" + shortid
+
+	// заполняем модель ответа
+	resp := models.Response{
+		Result: shortURL,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	//сериализуем ответ сервера
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(resp); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 }
 
-func generateRandomString(length int) string {
-	// Задаем символы, из которых будет состоять случайная строка
-	charSet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
-	// Инициализируем генератор случайных чисел
-	rand.Seed(time.Now().UnixNano())
+	var id string
 
-	// Генерируем случайную строку
-	result := make([]byte, length)
-	for i := 0; i < length; i++ {
-		result[i] = charSet[rand.Intn(len(charSet))]
+	//получим ID из запроса
+	shortid := r.URL.Path[1:]
+
+	if strings.ContainsRune(shortid, '/') {
+		id = strings.Split(shortid, "/")[0]
+		if len(id) == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	} else {
+		id = shortid
+		if len(id) == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 	}
 
-	return string(result)
+	if originURL := h.storage.GetURL(id); originURL != "" {
+		utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 }
+
+// func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
+
+// 	db, err := database.Connect(h.Config)
+// 	if err != nil {
+// 		w.WriteHeader(http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	if err := db.Ping(); err != nil {
+// 		w.WriteHeader(http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	w.WriteHeader(http.StatusOK)
+// }
