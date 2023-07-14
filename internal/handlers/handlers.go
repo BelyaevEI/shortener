@@ -142,9 +142,10 @@ func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 	var (
-		batchinput []models.Batch
-		shortid    string
-		shortURL   string
+		batchinput  []models.Batch
+		batchoutput []models.Batch
+		shortid     string
+		shortURL    string
 	)
 
 	body, err := io.ReadAll(r.Body)
@@ -178,15 +179,16 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 			ShortURL:      shortURL,
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-
-		//сериализуем ответ сервера
-		enc := json.NewEncoder(w)
-		if err := enc.Encode(resp); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+		batchoutput = append(batchoutput, resp)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	//сериализуем ответ сервера
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(batchoutput); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 }
