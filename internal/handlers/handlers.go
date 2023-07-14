@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/BelyaevEI/shortener/internal/models"
-	"github.com/BelyaevEI/shortener/internal/storage"
+	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/BelyaevEI/shortener/internal/utils"
 )
 
@@ -138,4 +138,55 @@ func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
+	var (
+		batchinput []models.Batch
+		shortid    string
+		shortURL   string
+	)
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = json.Unmarshal(body, &batchinput)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	for _, v := range batchinput {
+
+		if shortid = h.storage.GetURL(v.OriginalURL); shortid == "" {
+			shortid = utils.GenerateRandomString(8)
+			err := h.storage.SaveURL(shortid, string(v.OriginalURL))
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		shortURL = h.shortURL + "/" + shortid
+
+		// заполняем модель ответа
+		resp := models.Batch{
+			CorrelationID: v.CorrelationID,
+			OriginalURL:   v.OriginalURL,
+			ShortURL:      shortURL,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+
+		//сериализуем ответ сервера
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(resp); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
 }

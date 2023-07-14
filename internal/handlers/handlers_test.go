@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/BelyaevEI/shortener/internal/config"
-	"github.com/BelyaevEI/shortener/internal/storage"
+	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

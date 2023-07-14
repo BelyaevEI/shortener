@@ -6,7 +6,7 @@ import (
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/handlers"
 	"github.com/BelyaevEI/shortener/internal/route"
-	"github.com/BelyaevEI/shortener/internal/storage"
+	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/go-chi/chi/v5"
 )
 
