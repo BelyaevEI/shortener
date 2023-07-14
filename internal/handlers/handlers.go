@@ -175,7 +175,6 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 		// заполняем модель ответа
 		resp := models.Batch{
 			CorrelationID: v.CorrelationID,
-			OriginalURL:   v.OriginalURL,
 			ShortURL:      shortURL,
 		}
 
