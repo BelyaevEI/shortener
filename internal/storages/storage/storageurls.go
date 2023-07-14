@@ -1,10 +1,10 @@
 package storage
 
 import (
-	"github.com/BelyaevEI/shortener/internal/cachestorage"
-	"github.com/BelyaevEI/shortener/internal/database"
-	"github.com/BelyaevEI/shortener/internal/filestorage"
 	"github.com/BelyaevEI/shortener/internal/models"
+	"github.com/BelyaevEI/shortener/internal/storages/cachestorage"
+	"github.com/BelyaevEI/shortener/internal/storages/database"
+	"github.com/BelyaevEI/shortener/internal/storages/filestorage"
 )
 
 type Storage struct {

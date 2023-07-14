@@ -17,6 +17,8 @@ func New(h handlers.Handlers) *chi.Mux {
 	r.Get("/{id}", h.ReplaceGET)
 	r.Post("/api/shorten", h.PostAPI)
 	r.Post("/", h.ReplacePOST)
+	r.Get("/ping", h.PingDB)
+	r.Post("/api/shorten/batch", h.PostAPIBatch)
 
 	return r
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/handlers"
 	"github.com/BelyaevEI/shortener/internal/route"
-	"github.com/BelyaevEI/shortener/internal/storage"
+	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -28,7 +28,7 @@ func NewApp() *App {
 	cfg := config.ParseFlags()
 
 	// Инициализируем хранилище
-	s := storage.Init(cfg.FileStoragePath)
+	s := storage.Init(cfg.FileStoragePath, cfg.DBpath)
 
 	// Создаем обьект handle
 	h := handlers.New(cfg.ShortURL, s)
@@ -40,4 +40,5 @@ func NewApp() *App {
 		flagRunAddr: cfg.FlagRunAddr,
 		chi:         r,
 	}
+
 }

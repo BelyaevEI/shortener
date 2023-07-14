@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/BelyaevEI/shortener/internal/config"
-	"github.com/BelyaevEI/shortener/internal/storage"
+	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -44,7 +44,7 @@ func TestReplacePOST(t *testing.T) {
 	cfg := config.ParseFlags()
 	cfg.FileStoragePath = " "
 
-	storage := storage.Init(cfg.FileStoragePath)
+	storage := storage.Init(cfg.FileStoragePath, "")
 	//Создаем обьект handle
 	h := New(cfg.ShortURL, storage)
 
