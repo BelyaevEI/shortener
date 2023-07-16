@@ -5,6 +5,7 @@ import (
 
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/handlers"
+	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/route"
 	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/go-chi/chi/v5"
@@ -24,17 +25,20 @@ func RunServer() error {
 
 func NewApp() *App {
 
+	//Создаем логгер
+	log := logger.New()
+
 	// Парсинг переменных окружения
 	cfg := config.ParseFlags()
 
 	// Инициализируем хранилище
-	s := storage.Init(cfg.FileStoragePath, cfg.DBpath)
+	s := storage.Init(cfg.FileStoragePath, cfg.DBpath, log)
 
 	// Создаем обьект handle
-	h := handlers.New(cfg.ShortURL, s)
+	h := handlers.New(cfg.ShortURL, s, log)
 
 	// Создаем route
-	r := route.New(h)
+	r := route.New(h, log)
 
 	return &App{
 		flagRunAddr: cfg.FlagRunAddr,

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/BelyaevEI/shortener/internal/config"
+	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -44,9 +45,13 @@ func TestReplacePOST(t *testing.T) {
 	cfg := config.ParseFlags()
 	cfg.FileStoragePath = " "
 
-	storage := storage.Init(cfg.FileStoragePath, "")
+	//Создаем логгер
+	log := logger.New()
+
+	storage := storage.Init(cfg.FileStoragePath, "", log)
+
 	//Создаем обьект handle
-	h := New(cfg.ShortURL, storage)
+	h := New(cfg.ShortURL, storage, log)
 
 	t.Run(test1.name, func(t *testing.T) {
 		//Создаем тело запроса

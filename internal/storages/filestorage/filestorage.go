@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/models"
 	"github.com/BelyaevEI/shortener/internal/utils"
 )
@@ -16,14 +17,14 @@ type filestorage struct {
 	FileStoragePath string
 }
 
-func New(path string) *filestorage {
+func New(path string, logger *logger.Logger) *filestorage {
 
 	dir := filepath.Dir(path)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.Mkdir(dir, 0755)
 		if err != nil {
-			log.Fatalf("Error: %s", err)
+			logger.Log.Error(err)
 			return nil
 		}
 	}
@@ -37,8 +38,7 @@ func (s *filestorage) Save(url1, url2 string) error {
 	// открываем файл для записи
 	file, err := os.OpenFile(s.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
-		log.Fatalf("Ошибка при открытии %s", err)
-		return nil
+		return err
 	}
 
 	defer file.Close()
@@ -72,7 +72,6 @@ func (s *filestorage) Get(inputURL string) string {
 		if err == io.EOF {
 			break
 		}
-
 		read = append(read, data)
 	}
 

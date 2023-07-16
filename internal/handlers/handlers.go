@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
+	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/models"
 	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/BelyaevEI/shortener/internal/utils"
@@ -16,12 +16,14 @@ import (
 type Handlers struct {
 	shortURL string
 	storage  *storage.Storage
+	logger   *logger.Logger
 }
 
-func New(shortURL string, storage *storage.Storage) Handlers {
+func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers {
 	return Handlers{
 		shortURL: shortURL,
 		storage:  storage,
+		logger:   log,
 	}
 }
 
@@ -30,6 +32,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	var (
 		shortid  string
 		shortURL string
+		status   int
 	)
 
 	//Считаем из тела запроса строку URL
@@ -42,14 +45,18 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	// Проверяем существование ссылки
 	if shortid = h.storage.GetURL(string(longURL)); shortid == "" {
 		shortid = utils.GenerateRandomString(8)
+		status = http.StatusCreated
 		err := h.storage.SaveURL(shortid, string(longURL))
 		if err != nil {
-			log.Fatal(err)
+			h.logger.Log.Error(err)
+			return
 		}
+	} else {
+		status = http.StatusConflict
 	}
 
 	shortURL = h.shortURL + "/" + shortid
-	utils.Response(w, "Content-Type", "text/plain", shortURL, http.StatusCreated)
+	utils.Response(w, "Content-Type", "text/plain", shortURL, status)
 }
 
 func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
@@ -59,18 +66,21 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 		shortURL string
 		buf      bytes.Buffer
 		shortid  string
+		status   int
 	)
 
 	// читаем тело запроса
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// http.Error(w, err.Error(), http.StatusBadRequest)
+		h.logger.Log.Error(err, http.StatusBadRequest)
 		return
 	}
 
 	// десериализуем JSON
 	if err = json.Unmarshal(buf.Bytes(), &req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// http.Error(w, err.Error(), http.StatusBadRequest)
+		h.logger.Log.Error(err, http.StatusBadRequest)
 		return
 	}
 
@@ -78,10 +88,15 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 
 	if shortid = h.storage.GetURL(longURL); shortid == "" {
 		shortid = utils.GenerateRandomString(8)
+		status = http.StatusCreated
 		err := h.storage.SaveURL(shortid, longURL)
 		if err != nil {
-			log.Fatal(err)
+			// log.Fatal(err)
+			h.logger.Log.Error(err)
+			return
 		}
+	} else {
+		status = http.StatusConflict
 	}
 
 	shortURL = h.shortURL + "/" + shortid
@@ -92,7 +107,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(status)
 
 	//сериализуем ответ сервера
 	enc := json.NewEncoder(w)
@@ -133,6 +148,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.storage.Ping(); err != nil {
+		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -150,12 +166,14 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		h.logger.Log.Error("Error read body request", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	err = json.Unmarshal(body, &batchinput)
 	if err != nil {
+		h.logger.Log.Error("Error deserialization", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -166,7 +184,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 			shortid = utils.GenerateRandomString(8)
 			err := h.storage.SaveURL(shortid, string(v.OriginalURL))
 			if err != nil {
-				log.Fatal(err)
+				h.logger.Log.Error("Error save data", err)
 			}
 		}
 
@@ -188,6 +206,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	if err := enc.Encode(batchoutput); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		h.logger.Log.Error("Error serialization", err)
 		return
 	}
 }

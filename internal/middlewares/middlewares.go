@@ -3,11 +3,8 @@ package midllewares
 import (
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/BelyaevEI/shortener/internal/compres"
-	"github.com/BelyaevEI/shortener/internal/logger"
-	"go.uber.org/zap"
 )
 
 // Middleware - мидлварь сжатия
@@ -50,57 +47,5 @@ func Gzip(h http.Handler) http.Handler {
 		}
 		// передаём управление хендлеру
 		h.ServeHTTP(ow, r)
-	})
-}
-
-// Middleware - мидлварь логер
-func Logger(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		// создаём предустановленный регистратор zap
-		logg, err := zap.NewDevelopment()
-		if err != nil {
-			// вызываем панику, если ошибка
-			panic(err)
-		}
-
-		defer logg.Sync()
-
-		// делаем регистратор SugaredLogger
-		sugar := *logg.Sugar()
-
-		responseData := &logger.ResponseDatas{
-			Status: 0,
-			Size:   0,
-		}
-
-		lw := logger.LoggResponse{
-			Writer:   w, // встраиваем оригинальный http.ResponseWriter
-			RespData: responseData,
-		}
-		//Время запуска
-		start := time.Now()
-
-		// эндпоинт
-		uri := r.RequestURI
-
-		// метод запроса
-		method := r.Method
-
-		// обслуживание оригинального запроса
-		// внедряем реализацию http.ResponseWriter
-		h.ServeHTTP(&lw, r)
-
-		//время выполнения
-		duration := time.Since(start)
-
-		// отправляем сведения о запросе в zap
-		sugar.Infoln(
-			"uri", uri,
-			"method", method,
-			"status", responseData.Status, // получаем перехваченный код статуса ответа
-			"duration", duration,
-			"size", responseData.Size, // получаем перехваченный размер ответа
-		)
 	})
 }
