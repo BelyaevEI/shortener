@@ -27,7 +27,7 @@ func (s *Storage) GetShortURL(inputURL string) (string, error) {
 }
 
 func (s *Storage) GetOriginURL(inputURL string) (string, error) {
-	return s.storage.GetShortURL(inputURL)
+	return s.storage.GetOriginURL(inputURL)
 }
 
 func (s *Storage) SaveURL(url1, url2 string) error {
