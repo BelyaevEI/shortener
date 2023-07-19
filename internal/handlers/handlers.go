@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
@@ -12,8 +13,6 @@ import (
 	"github.com/BelyaevEI/shortener/internal/models"
 	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/BelyaevEI/shortener/internal/utils"
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Handlers struct {
@@ -36,7 +35,6 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		shortid  string
 		shortURL string
 		status   int
-		err      error
 	)
 
 	//Считаем из тела запроса строку URL
@@ -50,18 +48,17 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	// Проверяем существование ссылки
 	shortid, err = h.storage.GetShortURL(string(longURL))
 	if err != nil {
-
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgerrcode.IsNoData(pgErr.Code) {
+		if errors.Is(err, sql.ErrNoRows) {
 			shortid = utils.GenerateRandomString(8)
 			status = http.StatusCreated
-			err := h.storage.SaveURL(shortid, string(longURL))
+			err = h.storage.SaveURL(shortid, string(longURL))
 			if err != nil {
 				h.logger.Log.Error(err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 		} else {
+			h.logger.Log.Error(err)
 			status = http.StatusConflict
 		}
 	}
@@ -111,8 +108,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	shortid, err = h.storage.GetShortURL(longURL)
 	if err != nil {
 
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgerrcode.IsNoData(pgErr.Code) {
+		if errors.Is(err, models.NoData) {
 			shortid = utils.GenerateRandomString(8)
 			status = http.StatusCreated
 			err := h.storage.SaveURL(shortid, longURL)
@@ -180,11 +176,10 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	originURL, err := h.storage.GetLongURL(id)
+	originURL, err := h.storage.GetOriginURL(id)
 	if err != nil {
 
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgerrcode.IsNoData(pgErr.Code) {
+		if errors.Is(err, models.NoData) {
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			h.logger.Log.Error(err)
@@ -238,11 +233,10 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 		shortid, err = h.storage.GetShortURL(v.OriginalURL)
 		if err != nil {
-			var pgErr *pgconn.PgError
 
-			if errors.As(err, &pgErr) && pgerrcode.IsNoData(pgErr.Code) {
+			if errors.Is(err, models.NoData) {
 				shortid = utils.GenerateRandomString(8)
-				err := h.storage.SaveURL(shortid, string(v.OriginalURL))
+				err = h.storage.SaveURL(shortid, string(v.OriginalURL))
 				if err != nil {
 					h.logger.Log.Error("Error save data", err)
 				}

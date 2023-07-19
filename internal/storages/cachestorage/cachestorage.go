@@ -1,9 +1,8 @@
 package cachestorage
 
 import (
-	"errors"
-
 	"github.com/BelyaevEI/shortener/internal/logger"
+	"github.com/BelyaevEI/shortener/internal/models"
 )
 
 type chache struct {
@@ -24,14 +23,14 @@ func (c *chache) GetShortURL(inputURL string) (string, error) {
 	if foundurl, ok := c.storageShortURL[inputURL]; ok {
 		return foundurl, nil
 	}
-	return "", errors.New("ErrNoRows")
+	return "", models.NoData
 }
 
 func (c *chache) GetOriginURL(inputURL string) (string, error) {
 	if foundurl, ok := c.storageOriginURL[inputURL]; ok {
 		return foundurl, nil
 	}
-	return "", errors.New("ErrNoRows")
+	return "", models.NoData
 }
 
 func (c *chache) Save(url1, url2 string) error {

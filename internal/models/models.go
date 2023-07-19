@@ -1,5 +1,7 @@
 package models
 
+import "database/sql"
+
 type (
 	Request struct {
 		URL string `json:"url"`
@@ -27,3 +29,5 @@ type (
 		ShortURL      string `json:"short_url,omitempty"`
 	}
 )
+
+var NoData = sql.ErrNoRows

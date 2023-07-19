@@ -2,7 +2,6 @@ package filestorage
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"path/filepath"
 
@@ -60,7 +59,7 @@ func (s *filestorage) GetShortURL(inputURL string) (string, error) {
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
 	if foundurl := utils.TryFoundShortURL(inputURL, storageURL); foundurl != "" {
-		return "", errors.New("ErrNoRows")
+		return "", models.NoData
 	}
 
 	return foundurl, nil
@@ -76,7 +75,7 @@ func (s *filestorage) GetOriginURL(inputURL string) (string, error) {
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
 	if foundurl := utils.TryFoundOrigURL(inputURL, storageURL); foundurl != "" {
-		return "", errors.New("ErrNoRows")
+		return "", models.NoData
 	}
 
 	return foundurl, nil

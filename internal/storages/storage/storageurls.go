@@ -22,7 +22,7 @@ func Init(filepath, dbpath string, log *logger.Logger) *Storage {
 	return &Storage{storage: filestorage.New(filepath, log)}
 }
 
-func (s *Storage) GetLongURL(inputURL string) (string, error) {
+func (s *Storage) GetOriginURL(inputURL string) (string, error) {
 	return s.storage.GetOriginURL(inputURL)
 }
 
