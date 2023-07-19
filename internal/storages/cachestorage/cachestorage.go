@@ -20,14 +20,14 @@ func New(log *logger.Logger) *chache {
 	}
 }
 
-func (c *chache) GetShortUrl(inputURL string) (string, error) {
+func (c *chache) GetShortURL(inputURL string) (string, error) {
 	if foundurl, ok := c.storageShortURL[inputURL]; ok {
 		return foundurl, nil
 	}
 	return "", errors.New("ErrNoRows")
 }
 
-func (c *chache) GetOriginUrl(inputURL string) (string, error) {
+func (c *chache) GetOriginURL(inputURL string) (string, error) {
 	if foundurl, ok := c.storageOriginURL[inputURL]; ok {
 		return foundurl, nil
 	}
