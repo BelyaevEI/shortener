@@ -31,9 +31,10 @@ func (c *chache) GetOriginURL(inputURL string) (string, error) {
 	}
 	return "", nil
 }
-func (c *chache) Save(url1, url2 string) error {
-	c.storageShortURL[url1] = url2
-	c.storageOriginURL[url2] = url1
+
+func (c *chache) Save(shortURL, longURL string) error {
+	c.storageShortURL[longURL] = shortURL
+	c.storageOriginURL[shortURL] = longURL
 	return nil
 }
 
