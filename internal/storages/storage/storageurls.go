@@ -22,12 +22,12 @@ func Init(filepath, dbpath string, log *logger.Logger) *Storage {
 	return &Storage{storage: filestorage.New(filepath, log)}
 }
 
-func (s *Storage) GetShortURL(inputURL string) (string, error) {
-	return s.storage.GetShortURL(inputURL)
-}
-
 func (s *Storage) GetOriginURL(inputURL string) (string, error) {
 	return s.storage.GetOriginURL(inputURL)
+}
+
+func (s *Storage) GetShortURL(inputURL string) (string, error) {
+	return s.storage.GetShortURL(inputURL)
 }
 
 func (s *Storage) SaveURL(url1, url2 string) error {
