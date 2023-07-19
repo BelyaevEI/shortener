@@ -182,10 +182,14 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 	// Проверяем существование ссылки
 	originURL, err := h.storage.GetOriginURL(id)
-	if err != nil || len(originURL) == 0 {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.logger.Log.Error(err)
 		return
+	}
+
+	if len(originURL) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
 	}
 
 	utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
