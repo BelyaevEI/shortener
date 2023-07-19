@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -48,20 +46,24 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	// Проверяем существование ссылки
 	shortid, err = h.storage.GetShortURL(string(longURL))
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			shortid = utils.GenerateRandomString(8)
-			status = http.StatusCreated
-			err = h.storage.SaveURL(shortid, string(longURL))
-			if err != nil {
-				h.logger.Log.Error(err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-		} else {
-			h.logger.Log.Error(err)
-			status = http.StatusConflict
-		}
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
+
+	if len(shortid) == 0 {
+		shortid = utils.GenerateRandomString(8)
+		status = http.StatusCreated
+		err = h.storage.SaveURL(shortid, string(longURL))
+		if err != nil {
+			h.logger.Log.Error(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	} else {
+		status = http.StatusConflict
+	}
+
 	// if shortid, err = h.storage.GetShortUrl(string(longURL)); shortid == "" {
 	// 	shortid = utils.GenerateRandomString(8)
 	// 	status = http.StatusCreated
@@ -107,18 +109,21 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	// Проверяем существование ссылки
 	shortid, err = h.storage.GetShortURL(longURL)
 	if err != nil {
-
-		if errors.Is(err, models.NoData) {
-			shortid = utils.GenerateRandomString(8)
-			status = http.StatusCreated
-			err := h.storage.SaveURL(shortid, longURL)
-			if err != nil {
-				h.logger.Log.Error(err)
-				return
-			}
-		} else {
-			status = http.StatusConflict
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if len(shortid) == 0 {
+		shortid = utils.GenerateRandomString(8)
+		status = http.StatusCreated
+		err = h.storage.SaveURL(shortid, longURL)
+		if err != nil {
+			h.logger.Log.Error(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
+	} else {
+		status = http.StatusConflict
 	}
 
 	// if shortid = h.storage.GetShortUrl(longURL); shortid == "" {
@@ -177,13 +182,8 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 	// Проверяем существование ссылки
 	originURL, err := h.storage.GetOriginURL(id)
-	if err != nil {
-
-		if errors.Is(err, models.NoData) {
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			h.logger.Log.Error(err)
-		}
+	if err != nil || len(originURL) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -233,17 +233,17 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 		shortid, err = h.storage.GetShortURL(v.OriginalURL)
 		if err != nil {
-
-			if errors.Is(err, models.NoData) {
-				shortid = utils.GenerateRandomString(8)
-				err = h.storage.SaveURL(shortid, string(v.OriginalURL))
-				if err != nil {
-					h.logger.Log.Error("Error save data", err)
-				}
-			} else {
-				h.logger.Log.Error(err)
-			}
+			h.logger.Log.Error(err)
+			w.WriteHeader(http.StatusBadRequest)
 			return
+		}
+
+		if len(shortid) == 0 {
+			shortid = utils.GenerateRandomString(8)
+			err = h.storage.SaveURL(shortid, string(v.OriginalURL))
+			if err != nil {
+				h.logger.Log.Error("Error save data", err)
+			}
 		}
 
 		// if shortid = h.storage.GetShortUrl(v.OriginalURL); shortid == "" {

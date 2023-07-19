@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/BelyaevEI/shortener/internal/logger"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -45,10 +46,13 @@ func (d *database) GetShortURL(inputURL string) (string, error) {
 	)
 
 	row := d.db.QueryRow("select short from storage_urls where long=$1", inputURL)
-	if err = row.Scan(&foundURL); err == nil {
-		return foundURL, nil
+	if err = row.Scan(&foundURL); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return "", err
+		}
+		return "", nil
 	}
-	return "", err
+	return foundURL, nil
 }
 
 func (d *database) GetOriginURL(inputURL string) (string, error) {
@@ -59,10 +63,13 @@ func (d *database) GetOriginURL(inputURL string) (string, error) {
 	)
 
 	row := d.db.QueryRow("select long from storage_urls where short=$1", inputURL)
-	if err = row.Scan(&foundURL); err == nil {
-		return foundURL, nil
+	if err = row.Scan(&foundURL); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return "", err
+		}
+		return "", nil
 	}
-	return "", err
+	return foundURL, nil
 }
 
 func (d *database) Ping() error {

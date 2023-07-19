@@ -59,7 +59,7 @@ func (s *filestorage) GetShortURL(inputURL string) (string, error) {
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
 	if foundurl := utils.TryFoundShortURL(inputURL, storageURL); foundurl != "" {
-		return "", models.NoData
+		return "", nil
 	}
 
 	return foundurl, nil
@@ -75,7 +75,7 @@ func (s *filestorage) GetOriginURL(inputURL string) (string, error) {
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
 	if foundurl := utils.TryFoundOrigURL(inputURL, storageURL); foundurl != "" {
-		return "", models.NoData
+		return "", nil
 	}
 
 	return foundurl, nil
