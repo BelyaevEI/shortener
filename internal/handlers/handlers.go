@@ -180,7 +180,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	originURL, err := h.storage.GetOriginURL(id)
+	originURL, err := h.storage.GetLongURL(id)
 	if err != nil {
 
 		var pgErr *pgconn.PgError
