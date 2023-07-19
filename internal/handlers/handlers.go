@@ -48,7 +48,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortUrl(string(longURL))
+	shortid, err = h.storage.GetShortURL(string(longURL))
 	if err != nil {
 
 		var pgErr *pgconn.PgError
@@ -108,7 +108,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	longURL := req.URL
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortUrl(longURL)
+	shortid, err = h.storage.GetShortURL(longURL)
 	if err != nil {
 
 		var pgErr *pgconn.PgError
@@ -180,7 +180,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	originURL, err := h.storage.GetOriginUrl(id)
+	originURL, err := h.storage.GetOriginURL(id)
 	if err != nil {
 
 		var pgErr *pgconn.PgError
@@ -236,7 +236,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range batchinput {
 
-		shortid, err = h.storage.GetShortUrl(v.OriginalURL)
+		shortid, err = h.storage.GetShortURL(v.OriginalURL)
 		if err != nil {
 			var pgErr *pgconn.PgError
 
