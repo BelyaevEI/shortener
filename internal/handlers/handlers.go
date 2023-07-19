@@ -65,7 +65,6 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusConflict
 		}
 	}
-
 	// if shortid, err = h.storage.GetShortUrl(string(longURL)); shortid == "" {
 	// 	shortid = utils.GenerateRandomString(8)
 	// 	status = http.StatusCreated
