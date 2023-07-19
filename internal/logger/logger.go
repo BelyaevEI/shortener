@@ -7,8 +7,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// var sugar zap.SugaredLogger
-
 type (
 	// берём структуру для хранения сведений об ответе
 	ResponseDatas struct {

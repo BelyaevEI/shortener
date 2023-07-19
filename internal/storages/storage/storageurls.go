@@ -17,13 +17,17 @@ func Init(filepath, dbpath string, log *logger.Logger) *Storage {
 		return &Storage{storage: database.New(dbpath, log)}
 	}
 	if filepath == " " {
-		return &Storage{storage: cachestorage.New()}
+		return &Storage{storage: cachestorage.New(log)}
 	}
 	return &Storage{storage: filestorage.New(filepath, log)}
 }
 
-func (s *Storage) GetURL(inputURL string) string {
-	return s.storage.Get(inputURL)
+func (s *Storage) GetShortUrl(inputURL string) (string, error) {
+	return s.storage.GetShortUrl(inputURL)
+}
+
+func (s *Storage) GetOriginUrl(inputURL string) (string, error) {
+	return s.storage.GetShortUrl(inputURL)
 }
 
 func (s *Storage) SaveURL(url1, url2 string) error {

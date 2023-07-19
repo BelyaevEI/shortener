@@ -10,49 +10,59 @@ import (
 type database struct {
 	DBpath string
 	db     *sql.DB
+	log    *logger.Logger
 }
 
-func New(DBpath string, logger *logger.Logger) *database {
+func New(DBpath string, log *logger.Logger) *database {
 	db, err := sql.Open("pgx", DBpath)
 	if err != nil {
-		// log.Fatal(err)
-		logger.Log.Error(err)
+		log.Log.Error(err)
 	}
 
 	_, err = db.Exec("create table IF NOT EXISTS storage_urls(short text not null, long text not null)")
 	if err != nil {
-		// log.Fatal(err)
-		logger.Log.Error("Error create tabele", err)
+		log.Log.Error("Error create tabele", err)
 		return nil
 	}
 
 	return &database{
 		DBpath: DBpath,
 		db:     db,
+		log:    log,
 	}
 }
 
 func (d *database) Save(url1, url2 string) error {
 	_, err := d.db.Exec("insert into storage_urls(short, long) values ($1, $2)", url1, url2)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
-func (d *database) Get(inputURL string) string {
+func (d *database) GetShortUrl(inputURL string) (string, error) {
 
-	var foundURL string
+	var (
+		foundURL string
+		err      error
+	)
 
-	row1 := d.db.QueryRow("select long from storage_urls where short=$1", inputURL)
-	if err := row1.Scan(&foundURL); err == nil {
-		return foundURL
+	row := d.db.QueryRow("select short from storage_urls where long=$1", inputURL)
+	if err = row.Scan(&foundURL); err == nil {
+		return foundURL, nil
 	}
-	row2 := d.db.QueryRow("select short from storage_urls where long=$1", inputURL)
-	if err := row2.Scan(&foundURL); err == nil {
-		return foundURL
+	return "", err
+}
+
+func (d *database) GetOriginUrl(inputURL string) (string, error) {
+
+	var (
+		foundURL string
+		err      error
+	)
+
+	row := d.db.QueryRow("select long from storage_urls where short=$1", inputURL)
+	if err = row.Scan(&foundURL); err == nil {
+		return foundURL, nil
 	}
-	return ""
+	return "", err
 }
 
 func (d *database) Ping() error {

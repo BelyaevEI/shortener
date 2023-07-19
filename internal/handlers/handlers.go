@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -17,6 +18,7 @@ type Handlers struct {
 	shortURL string
 	storage  *storage.Storage
 	logger   *logger.Logger
+	NoRow    error
 }
 
 func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers {
@@ -24,6 +26,7 @@ func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers
 		shortURL: shortURL,
 		storage:  storage,
 		logger:   log,
+		NoRow:    errors.New("ErrNoRows"),
 	}
 }
 
@@ -33,27 +36,44 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		shortid  string
 		shortURL string
 		status   int
+		err      error
 	)
 
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
 	if err != nil || string(longURL) == " " {
+		h.logger.Log.Error("Empty body")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Проверяем существование ссылки
-	if shortid = h.storage.GetURL(string(longURL)); shortid == "" {
+	shortid, err = h.storage.GetShortUrl(string(longURL))
+	if errors.Is(err, h.NoRow) {
 		shortid = utils.GenerateRandomString(8)
 		status = http.StatusCreated
 		err := h.storage.SaveURL(shortid, string(longURL))
 		if err != nil {
 			h.logger.Log.Error(err)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	} else {
 		status = http.StatusConflict
 	}
+
+	// if shortid, err = h.storage.GetShortUrl(string(longURL)); shortid == "" {
+	// 	shortid = utils.GenerateRandomString(8)
+	// 	status = http.StatusCreated
+	// 	err := h.storage.SaveURL(shortid, string(longURL))
+	// 	if err != nil {
+	// 		h.logger.Log.Error(err)
+	// 		w.WriteHeader(http.StatusBadRequest)
+	// 		return
+	// 	}
+	// } else {
+	// 	status = http.StatusConflict
+	// }
 
 	shortURL = h.shortURL + "/" + shortid
 	utils.Response(w, "Content-Type", "text/plain", shortURL, status)
@@ -72,32 +92,42 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	// читаем тело запроса
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
-		// http.Error(w, err.Error(), http.StatusBadRequest)
-		h.logger.Log.Error(err, http.StatusBadRequest)
+		h.logger.Log.Error(err)
 		return
 	}
 
 	// десериализуем JSON
 	if err = json.Unmarshal(buf.Bytes(), &req); err != nil {
-		// http.Error(w, err.Error(), http.StatusBadRequest)
-		h.logger.Log.Error(err, http.StatusBadRequest)
+		h.logger.Log.Error(err)
 		return
 	}
 
 	longURL := req.URL
 
-	if shortid = h.storage.GetURL(longURL); shortid == "" {
+	// Проверяем существование ссылки
+	shortid, err = h.storage.GetShortUrl(longURL)
+	if errors.Is(err, h.NoRow) {
 		shortid = utils.GenerateRandomString(8)
 		status = http.StatusCreated
 		err := h.storage.SaveURL(shortid, longURL)
 		if err != nil {
-			// log.Fatal(err)
 			h.logger.Log.Error(err)
 			return
 		}
 	} else {
 		status = http.StatusConflict
 	}
+	// if shortid = h.storage.GetShortUrl(longURL); shortid == "" {
+	// 	shortid = utils.GenerateRandomString(8)
+	// 	status = http.StatusCreated
+	// 	err := h.storage.SaveURL(shortid, longURL)
+	// 	if err != nil {
+	// 		h.logger.Log.Error(err)
+	// 		return
+	// 	}
+	// } else {
+	// 	status = http.StatusConflict
+	// }
 
 	shortURL = h.shortURL + "/" + shortid
 
@@ -112,6 +142,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	//сериализуем ответ сервера
 	enc := json.NewEncoder(w)
 	if err := enc.Encode(resp); err != nil {
+		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -127,22 +158,33 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	if strings.ContainsRune(shortid, '/') {
 		id = strings.Split(shortid, "/")[0]
 		if len(id) == 0 {
+			h.logger.Log.Info("Empty id in Get request")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	} else {
 		id = shortid
 		if len(id) == 0 {
+			h.logger.Log.Info("Empty id in Get request")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 	}
 
-	if originURL := h.storage.GetURL(id); originURL != "" {
-		utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
-	} else {
+	// Проверяем существование ссылки
+	originURL, err := h.storage.GetOriginUrl(id)
+	if errors.Is(err, h.NoRow) {
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
+
+	utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
+
+	// if originURL := h.storage.GetOriginUrl(id); originURL != "" {
+	// 	utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
+	// } else {
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// }
 }
 
 func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
@@ -180,13 +222,22 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range batchinput {
 
-		if shortid = h.storage.GetURL(v.OriginalURL); shortid == "" {
+		shortid, err = h.storage.GetShortUrl(v.OriginalURL)
+		if errors.Is(err, h.NoRow) {
 			shortid = utils.GenerateRandomString(8)
 			err := h.storage.SaveURL(shortid, string(v.OriginalURL))
 			if err != nil {
 				h.logger.Log.Error("Error save data", err)
+				return
 			}
 		}
+		// if shortid = h.storage.GetShortUrl(v.OriginalURL); shortid == "" {
+		// 	shortid = utils.GenerateRandomString(8)
+		// 	err := h.storage.SaveURL(shortid, string(v.OriginalURL))
+		// 	if err != nil {
+		// 		h.logger.Log.Error("Error save data", err)
+		// 	}
+		// }
 
 		shortURL = h.shortURL + "/" + shortid
 

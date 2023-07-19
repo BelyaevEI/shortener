@@ -1,10 +1,8 @@
 package filestorage
 
 import (
-	"bufio"
 	"encoding/json"
-	"io"
-	"log"
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -15,20 +13,23 @@ import (
 
 type filestorage struct {
 	FileStoragePath string
+	log             *logger.Logger
 }
 
-func New(path string, logger *logger.Logger) *filestorage {
+func New(path string, log *logger.Logger) *filestorage {
 
 	dir := filepath.Dir(path)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.Mkdir(dir, 0755)
 		if err != nil {
-			logger.Log.Error(err)
+			log.Log.Error(err)
 			return nil
 		}
 	}
-	return &filestorage{FileStoragePath: path}
+	return &filestorage{
+		FileStoragePath: path,
+		log:             log}
 }
 
 func (s *filestorage) Save(url1, url2 string) error {
@@ -49,51 +50,39 @@ func (s *filestorage) Save(url1, url2 string) error {
 	return encoder.Encode(&longShortURL)
 }
 
-func (s *filestorage) Get(inputURL string) string {
+func (s *filestorage) GetShortUrl(inputURL string) (string, error) {
 
 	var (
-		read       [][]byte
 		storageURL []models.StorageURL
+		foundurl   string
 	)
 
-	// открываем файл для записи
-	file, err := os.OpenFile(s.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
-	if err != nil {
-		log.Fatalf("Ошибка при открытии %s", err)
+	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
+
+	if foundurl := utils.TryFoundShortURL(inputURL, storageURL); foundurl != "" {
+		return "", errors.New("ErrNoRows")
 	}
 
-	defer file.Close()
+	return foundurl, nil
+}
 
-	reader := bufio.NewReader(file)
+func (s *filestorage) GetOriginUrl(inputURL string) (string, error) {
 
-	// Чтение из файла
-	for {
-		data, err := reader.ReadBytes('\n')
-		if err == io.EOF {
-			break
-		}
-		read = append(read, data)
+	var (
+		storageURL []models.StorageURL
+		foundurl   string
+	)
+
+	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
+
+	if foundurl := utils.TryFoundOrigURL(inputURL, storageURL); foundurl != "" {
+		return "", errors.New("ErrNoRows")
 	}
 
-	// преобразуем данные из JSON-представления в структуру
-	for _, line := range read {
-		urls := models.StorageURL{}
-		err := json.Unmarshal(line, &urls)
-		if err == nil {
-			storageURL = append(storageURL, urls)
-		}
-	}
-
-	if foundurl1 := utils.TryFoundOrigURL(inputURL, storageURL); foundurl1 == "" {
-		if foundurl2 := utils.TryFoundShortURL(inputURL, storageURL); foundurl1 != "" {
-			return foundurl2
-		}
-	} else {
-		return foundurl1
-	}
-	return ""
+	return foundurl, nil
 }
 
 func (s *filestorage) Ping() error {
-	panic("No implemention")
+	s.log.Log.Info("Work with file: no implement method Ping")
+	return nil
 }
