@@ -184,6 +184,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	originURL, err := h.storage.GetOriginURL(id)
 	if err != nil || len(originURL) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
+		h.logger.Log.Error(err)
 		return
 	}
 
