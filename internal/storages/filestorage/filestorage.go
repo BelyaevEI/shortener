@@ -49,7 +49,7 @@ func (s *filestorage) Save(url1, url2 string) error {
 	return encoder.Encode(&longShortURL)
 }
 
-func (s *filestorage) GetShortURL(inputURL string) (str string, e error) {
+func (s *filestorage) GetShortURL(inputURL string) (string, error) {
 
 	var (
 		storageURL []models.StorageURL
