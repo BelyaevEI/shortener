@@ -26,6 +26,7 @@ func (c *cache) GetShortURL(inputURL string) (string, error) {
 }
 
 func (c *cache) GetOriginURL(inputURL string) (string, error) {
+	c.log.Log.Info(c.storageOriginURL)
 	if foundurl, ok := c.storageOriginURL[inputURL]; ok {
 		return foundurl, nil
 	}
