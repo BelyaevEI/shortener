@@ -19,18 +19,13 @@ func New(log *logger.Logger) *cache {
 }
 
 func (c *cache) GetShortURL(inputURL string) (string, error) {
-	if foundurl, ok := c.storageShortURL[inputURL]; ok {
-		return foundurl, nil
-	}
-	return "", nil
+	foundurl := c.storageShortURL[inputURL]
+	return foundurl, nil
 }
 
 func (c *cache) GetOriginURL(inputURL string) (string, error) {
-	c.log.Log.Info(c.storageOriginURL)
-	if foundurl, ok := c.storageOriginURL[inputURL]; ok {
-		return foundurl, nil
-	}
-	return "", nil
+	foundurl := c.storageOriginURL[inputURL]
+	return foundurl, nil
 }
 
 func (c *cache) Save(shortURL, longURL string) error {

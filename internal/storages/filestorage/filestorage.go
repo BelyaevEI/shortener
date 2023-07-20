@@ -49,7 +49,7 @@ func (s *filestorage) Save(url1, url2 string) error {
 	return encoder.Encode(&longShortURL)
 }
 
-func (s *filestorage) GetShortURL(inputURL string) (string, error) {
+func (s *filestorage) GetShortURL(inputURL string) (str string, e error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -58,10 +58,7 @@ func (s *filestorage) GetShortURL(inputURL string) (string, error) {
 
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
-	if foundurl := utils.TryFoundShortURL(inputURL, storageURL); foundurl != "" {
-		return "", nil
-	}
-
+	foundurl = utils.TryFoundShortURL(inputURL, storageURL)
 	return foundurl, nil
 }
 
@@ -74,10 +71,7 @@ func (s *filestorage) GetOriginURL(inputURL string) (string, error) {
 
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
-	if foundurl := utils.TryFoundOrigURL(inputURL, storageURL); foundurl != "" {
-		return "", nil
-	}
-
+	foundurl = utils.TryFoundOrigURL(inputURL, storageURL)
 	return foundurl, nil
 }
 

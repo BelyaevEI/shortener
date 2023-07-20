@@ -38,7 +38,7 @@ func (d *database) Save(url1, url2 string) error {
 	return err
 }
 
-func (d *database) GetShortURL(inputURL string) (string, error) {
+func (d *database) GetShortURL(inputURL string) (s string, e error) {
 
 	var (
 		foundURL string
@@ -55,7 +55,7 @@ func (d *database) GetShortURL(inputURL string) (string, error) {
 	return foundURL, nil
 }
 
-func (d *database) GetOriginURL(inputURL string) (string, error) {
+func (d *database) GetOriginURL(inputURL string) (s string, e error) {
 
 	var (
 		foundURL string

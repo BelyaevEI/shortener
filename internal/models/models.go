@@ -16,8 +16,8 @@ type (
 
 	Storage interface {
 		Save(url1, url2 string) error
-		GetOriginURL(shortURL string) (string, error)
-		GetShortURL(longURL string) (string, error)
+		GetOriginURL(shortURL string) (str string, e error)
+		GetShortURL(longURL string) (str string, e error)
 		Ping() error
 	}
 

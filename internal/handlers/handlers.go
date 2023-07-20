@@ -44,7 +44,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortURL(string(longURL))
+	shortid, err = h.storage.GetShortenURL(string(longURL))
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -94,7 +94,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	longURL := req.URL
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortURL(longURL)
+	shortid, err = h.storage.GetShortenURL(longURL)
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -156,7 +156,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	originURL, err := h.storage.GetOriginURL(id)
+	originURL, err := h.storage.GetOriginalURL(id)
 	if err != nil || len(originURL) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		h.logger.Log.Infoln(err, originURL)
@@ -201,7 +201,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range batchinput {
 
-		shortid, err = h.storage.GetShortURL(v.OriginalURL)
+		shortid, err = h.storage.GetShortenURL(v.OriginalURL)
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
