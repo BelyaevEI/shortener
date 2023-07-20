@@ -64,19 +64,6 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		status = http.StatusConflict
 	}
 
-	// if shortid, err = h.storage.GetShortUrl(string(longURL)); shortid == "" {
-	// 	shortid = utils.GenerateRandomString(8)
-	// 	status = http.StatusCreated
-	// 	err := h.storage.SaveURL(shortid, string(longURL))
-	// 	if err != nil {
-	// 		h.logger.Log.Error(err)
-	// 		w.WriteHeader(http.StatusBadRequest)
-	// 		return
-	// 	}
-	// } else {
-	// 	status = http.StatusConflict
-	// }
-
 	shortURL = h.shortURL + "/" + shortid
 	utils.Response(w, "Content-Type", "text/plain", shortURL, status)
 }
@@ -125,18 +112,6 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	} else {
 		status = http.StatusConflict
 	}
-
-	// if shortid = h.storage.GetShortUrl(longURL); shortid == "" {
-	// 	shortid = utils.GenerateRandomString(8)
-	// 	status = http.StatusCreated
-	// 	err := h.storage.SaveURL(shortid, longURL)
-	// 	if err != nil {
-	// 		h.logger.Log.Error(err)
-	// 		return
-	// 	}
-	// } else {
-	// 	status = http.StatusConflict
-	// }
 
 	shortURL = h.shortURL + "/" + shortid
 
@@ -189,11 +164,6 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
-	// if originURL := h.storage.GetOriginUrl(id); originURL != "" {
-	// 	utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
-	// } else {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// }
 }
 
 func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
@@ -245,14 +215,6 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 				h.logger.Log.Error("Error save data", err)
 			}
 		}
-
-		// if shortid = h.storage.GetShortUrl(v.OriginalURL); shortid == "" {
-		// 	shortid = utils.GenerateRandomString(8)
-		// 	err := h.storage.SaveURL(shortid, string(v.OriginalURL))
-		// 	if err != nil {
-		// 		h.logger.Log.Error("Error save data", err)
-		// 	}
-		// }
 
 		shortURL = h.shortURL + "/" + shortid
 
