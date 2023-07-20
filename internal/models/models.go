@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type (
 	Request struct {
 		URL string `json:"url"`
@@ -15,10 +17,10 @@ type (
 	}
 
 	Storage interface {
-		Save(url1, url2 string) error
-		GetOriginURL(shortURL string) (str string, e error)
-		GetShortURL(longURL string) (str string, e error)
-		Ping() error
+		Save(ctx context.Context, url1, url2 string) error
+		GetOriginURL(ctx context.Context, shortURL string) (string, error)
+		GetShortURL(ctx context.Context, longURL string) (string, error)
+		Ping(ctx context.Context) error
 	}
 
 	Batch struct {

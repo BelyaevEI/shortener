@@ -1,6 +1,7 @@
 package filestorage
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -31,7 +32,7 @@ func New(path string, log *logger.Logger) *filestorage {
 		log:             log}
 }
 
-func (s *filestorage) Save(url1, url2 string) error {
+func (s *filestorage) Save(ctx context.Context, url1, url2 string) error {
 
 	var longShortURL models.StorageURL
 
@@ -45,11 +46,15 @@ func (s *filestorage) Save(url1, url2 string) error {
 
 	longShortURL.OriginalURL, longShortURL.ShortURL = url2, url1
 	encoder := json.NewEncoder(file)
-
-	return encoder.Encode(&longShortURL)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		return encoder.Encode(&longShortURL)
+	}
 }
 
-func (s *filestorage) GetShortURL(inputURL string) (string, error) {
+func (s *filestorage) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -59,10 +64,16 @@ func (s *filestorage) GetShortURL(inputURL string) (string, error) {
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
 	foundurl = utils.TryFoundShortURL(inputURL, storageURL)
-	return foundurl, nil
+
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	default:
+		return foundurl, nil
+	}
 }
 
-func (s *filestorage) GetOriginURL(inputURL string) (string, error) {
+func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -72,10 +83,22 @@ func (s *filestorage) GetOriginURL(inputURL string) (string, error) {
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
 	foundurl = utils.TryFoundOrigURL(inputURL, storageURL)
-	return foundurl, nil
+
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	default:
+		return foundurl, nil
+	}
+
 }
 
-func (s *filestorage) Ping() error {
+func (s *filestorage) Ping(ctx context.Context) error {
 	s.log.Log.Info("Work with file: no implement method Ping")
-	return nil
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		return nil
+	}
 }

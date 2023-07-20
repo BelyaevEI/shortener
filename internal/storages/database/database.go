@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 
@@ -33,19 +34,19 @@ func New(DBpath string, log *logger.Logger) *database {
 	}
 }
 
-func (d *database) Save(url1, url2 string) error {
-	_, err := d.db.Exec("insert into storage_urls(short, long) values ($1, $2)", url1, url2)
+func (d *database) Save(ctx context.Context, url1, url2 string) error {
+	_, err := d.db.ExecContext(ctx, "insert into storage_urls(short, long) values ($1, $2)", url1, url2)
 	return err
 }
 
-func (d *database) GetShortURL(inputURL string) (string, error) {
+func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		foundURL string
 		err      error
 	)
 
-	row := d.db.QueryRow("select short from storage_urls where long=$1", inputURL)
+	row := d.db.QueryRowContext(ctx, "select short from storage_urls where long=$1", inputURL)
 	if err = row.Scan(&foundURL); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", err
@@ -55,14 +56,14 @@ func (d *database) GetShortURL(inputURL string) (string, error) {
 	return foundURL, nil
 }
 
-func (d *database) GetOriginURL(inputURL string) (string, error) {
+func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		foundURL string
 		err      error
 	)
 
-	row := d.db.QueryRow("select long from storage_urls where short=$1", inputURL)
+	row := d.db.QueryRowContext(ctx, "select long from storage_urls where short=$1", inputURL)
 	if err = row.Scan(&foundURL); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", err
@@ -72,9 +73,15 @@ func (d *database) GetOriginURL(inputURL string) (string, error) {
 	return foundURL, nil
 }
 
-func (d *database) Ping() error {
+func (d *database) Ping(ctx context.Context) error {
 	if err := d.db.Ping(); err != nil {
 		return err
 	}
-	return nil
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		return nil
+	}
 }

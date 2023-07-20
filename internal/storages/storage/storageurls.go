@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"context"
+
 	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/models"
 	"github.com/BelyaevEI/shortener/internal/storages/cachestorage"
@@ -22,18 +24,18 @@ func Init(filepath, dbpath string, log *logger.Logger) *Storage {
 	return &Storage{storage: filestorage.New(filepath, log)}
 }
 
-func (s *Storage) GetOriginalURL(inputURL string) (string, error) {
-	return s.storage.GetOriginURL(inputURL)
+func (s *Storage) GetOriginalURL(ctx context.Context, inputURL string) (string, error) {
+	return s.storage.GetOriginURL(ctx, inputURL)
 }
 
-func (s *Storage) GetShortenURL(inputURL string) (string, error) {
-	return s.storage.GetShortURL(inputURL)
+func (s *Storage) GetShortenURL(ctx context.Context, inputURL string) (string, error) {
+	return s.storage.GetShortURL(ctx, inputURL)
 }
 
-func (s *Storage) SaveURL(url1, url2 string) error {
-	return s.storage.Save(url1, url2)
+func (s *Storage) SaveURL(ctx context.Context, url1, url2 string) error {
+	return s.storage.Save(ctx, url1, url2)
 }
 
-func (s *Storage) Ping() error {
-	return s.storage.Ping()
+func (s *Storage) Ping(ctx context.Context) error {
+	return s.storage.Ping(ctx)
 }

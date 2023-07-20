@@ -1,6 +1,8 @@
 package cachestorage
 
 import (
+	"context"
+
 	"github.com/BelyaevEI/shortener/internal/logger"
 )
 
@@ -18,23 +20,46 @@ func New(log *logger.Logger) *cache {
 	}
 }
 
-func (c *cache) GetShortURL(inputURL string) (string, error) {
+func (c *cache) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageShortURL[inputURL]
-	return foundurl, nil
+
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	default:
+		return foundurl, nil
+	}
+
 }
 
-func (c *cache) GetOriginURL(inputURL string) (string, error) {
+func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageOriginURL[inputURL]
-	return foundurl, nil
+
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	default:
+		return foundurl, nil
+	}
 }
 
-func (c *cache) Save(shortURL, longURL string) error {
+func (c *cache) Save(ctx context.Context, shortURL, longURL string) error {
 	c.storageShortURL[longURL] = shortURL
 	c.storageOriginURL[shortURL] = longURL
-	return nil
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		return nil
+	}
 }
 
-func (c *cache) Ping() error {
+func (c *cache) Ping(ctx context.Context) error {
 	c.log.Log.Info("Work with internal storage: no implement method Ping")
-	return nil
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		return nil
+	}
 }

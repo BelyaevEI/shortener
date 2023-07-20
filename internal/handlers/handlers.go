@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/models"
@@ -35,6 +37,14 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		status   int
 	)
 
+	// Пишу сюда, потому что в пачке в личку сказали не писать
+	// Если контекст создать и пользователь отменит запрос
+	// Такой контекст сработает?
+	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
 	if err != nil || string(longURL) == " " {
@@ -44,7 +54,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortenURL(string(longURL))
+	shortid, err = h.storage.GetShortenURL(ctx, string(longURL))
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -54,7 +64,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	if len(shortid) == 0 {
 		shortid = utils.GenerateRandomString(8)
 		status = http.StatusCreated
-		err = h.storage.SaveURL(shortid, string(longURL))
+		err = h.storage.SaveURL(ctx, shortid, string(longURL))
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -78,6 +88,11 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 		status   int
 	)
 
+	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
 	// читаем тело запроса
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
@@ -94,7 +109,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	longURL := req.URL
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortenURL(longURL)
+	shortid, err = h.storage.GetShortenURL(ctx, longURL)
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -103,7 +118,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	if len(shortid) == 0 {
 		shortid = utils.GenerateRandomString(8)
 		status = http.StatusCreated
-		err = h.storage.SaveURL(shortid, longURL)
+		err = h.storage.SaveURL(ctx, shortid, longURL)
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -136,6 +151,11 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 	var id string
 
+	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
 	//получим ID из запроса
 	shortid := r.URL.Path[1:]
 
@@ -156,7 +176,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	originURL, err := h.storage.GetOriginalURL(id)
+	originURL, err := h.storage.GetOriginalURL(ctx, id)
 	if err != nil || len(originURL) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		h.logger.Log.Infoln(err, originURL)
@@ -168,7 +188,12 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
-	if err := h.storage.Ping(); err != nil {
+	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	if err := h.storage.Ping(ctx); err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -184,6 +209,11 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 		shortid     string
 		shortURL    string
 	)
+
+	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -201,7 +231,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range batchinput {
 
-		shortid, err = h.storage.GetShortenURL(v.OriginalURL)
+		shortid, err = h.storage.GetShortenURL(ctx, v.OriginalURL)
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -210,7 +240,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 		if len(shortid) == 0 {
 			shortid = utils.GenerateRandomString(8)
-			err = h.storage.SaveURL(shortid, string(v.OriginalURL))
+			err = h.storage.SaveURL(ctx, shortid, string(v.OriginalURL))
 			if err != nil {
 				h.logger.Log.Error("Error save data", err)
 			}
