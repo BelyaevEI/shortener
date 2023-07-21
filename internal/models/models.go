@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type (
 	Request struct {
 		URL string `json:"url"`
@@ -15,7 +17,15 @@ type (
 	}
 
 	Storage interface {
-		Save(url1, url2 string) error
-		Get(inputURL string) string
+		Save(ctx context.Context, url1, url2 string) error
+		GetOriginURL(ctx context.Context, shortURL string) (string, error)
+		GetShortURL(ctx context.Context, longURL string) (string, error)
+		Ping(ctx context.Context) error
+	}
+
+	Batch struct {
+		CorrelationID string `json:"correlation_id"`
+		OriginalURL   string `json:"original_url,omitempty"`
+		ShortURL      string `json:"short_url,omitempty"`
 	}
 )
