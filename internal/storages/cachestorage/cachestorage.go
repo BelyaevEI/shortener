@@ -21,7 +21,7 @@ func New(log *logger.Logger) *cache {
 	}
 }
 
-func (c *cache) GetShortURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
+func (c *cache) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageShortURL[inputURL]
 
 	select {
@@ -33,7 +33,7 @@ func (c *cache) GetShortURL(ctx context.Context, inputURL string, userID uint64)
 
 }
 
-func (c *cache) GetOriginURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
+func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageOriginURL[inputURL]
 
 	return foundurl, nil

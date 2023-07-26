@@ -24,12 +24,12 @@ func Init(filepath, dbpath string, log *logger.Logger) *Storage {
 	return &Storage{storage: filestorage.New(filepath, log)}
 }
 
-func (s *Storage) GetOriginalURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
-	return s.storage.GetOriginURL(ctx, inputURL, userID)
+func (s *Storage) GetOriginalURL(ctx context.Context, inputURL string) (string, error) {
+	return s.storage.GetOriginURL(ctx, inputURL)
 }
 
-func (s *Storage) GetShortenURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
-	return s.storage.GetShortURL(ctx, inputURL, userID)
+func (s *Storage) GetShortenURL(ctx context.Context, inputURL string) (string, error) {
+	return s.storage.GetShortURL(ctx, inputURL)
 }
 
 func (s *Storage) SaveURL(ctx context.Context, url1, url2 string, userID uint64) error {

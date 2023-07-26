@@ -33,10 +33,10 @@ func GenerateRandomString(length int) string {
 }
 
 // Поиск короткой ссылки по длинной
-func TryFoundShortURL(userID uint64, longURL string, s []models.StorageURL) (url string) {
+func TryFoundShortURL(longURL string, s []models.StorageURL) (url string) {
 
 	for _, ur := range s {
-		if ur.OriginalURL == longURL && ur.UserID == userID {
+		if ur.OriginalURL == longURL {
 			url = ur.ShortURL
 			return url
 		}
@@ -45,9 +45,9 @@ func TryFoundShortURL(userID uint64, longURL string, s []models.StorageURL) (url
 }
 
 // Поиск длинной ссылки по короткой
-func TryFoundOrigURL(userID uint64, shortURL string, s []models.StorageURL) (url string) {
+func TryFoundOrigURL(shortURL string, s []models.StorageURL) (url string) {
 	for _, ur := range s {
-		if ur.ShortURL == shortURL && ur.UserID == userID {
+		if ur.ShortURL == shortURL {
 			url = ur.OriginalURL
 			return url
 		}

@@ -48,11 +48,9 @@ func Validation(tokenString string) bool {
 	}
 
 	if !token.Valid {
-		fmt.Println("Token is not valid")
 		return false
 	}
 
-	fmt.Println("Token os valid")
 	return true
 }
 
@@ -86,7 +84,6 @@ func GetUserID(tokenString string) (uint64, error) {
 	}
 
 	if !token.Valid {
-		fmt.Println("Token is not valid")
 		return 0, err
 	}
 

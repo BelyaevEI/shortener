@@ -54,7 +54,7 @@ func (s *filestorage) Save(ctx context.Context, url1, url2 string, userID uint64
 	}
 }
 
-func (s *filestorage) GetShortURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
+func (s *filestorage) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -63,7 +63,7 @@ func (s *filestorage) GetShortURL(ctx context.Context, inputURL string, userID u
 
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
-	foundurl = utils.TryFoundShortURL(userID, inputURL, storageURL)
+	foundurl = utils.TryFoundShortURL(inputURL, storageURL)
 
 	select {
 	case <-ctx.Done():
@@ -73,7 +73,7 @@ func (s *filestorage) GetShortURL(ctx context.Context, inputURL string, userID u
 	}
 }
 
-func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
+func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -82,7 +82,7 @@ func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string, userID 
 
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
-	foundurl = utils.TryFoundOrigURL(userID, inputURL, storageURL)
+	foundurl = utils.TryFoundOrigURL(inputURL, storageURL)
 
 	select {
 	case <-ctx.Done():

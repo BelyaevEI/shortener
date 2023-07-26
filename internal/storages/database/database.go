@@ -40,14 +40,14 @@ func (d *database) Save(ctx context.Context, url1, url2 string, userID uint64) e
 	return err
 }
 
-func (d *database) GetShortURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
+func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		foundURL string
 		err      error
 	)
 
-	row := d.db.QueryRowContext(ctx, "select short from storage_urls where userID= $1 and long=$2", userID, inputURL)
+	row := d.db.QueryRowContext(ctx, "select short from storage_urls where long=$1", inputURL)
 	if err = row.Scan(&foundURL); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", err
@@ -57,14 +57,14 @@ func (d *database) GetShortURL(ctx context.Context, inputURL string, userID uint
 	return foundURL, nil
 }
 
-func (d *database) GetOriginURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
+func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		foundURL string
 		err      error
 	)
 
-	row := d.db.QueryRowContext(ctx, "select long from storage_urls where userID=$1 and short=$2", userID, inputURL)
+	row := d.db.QueryRowContext(ctx, "select long from storage_urls where short=$1", inputURL)
 	if err = row.Scan(&foundURL); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", err
