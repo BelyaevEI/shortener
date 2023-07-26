@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	cookies "github.com/BelyaevEI/shortener/internal/cookie"
 	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/models"
 	"github.com/BelyaevEI/shortener/internal/storages/storage"
@@ -37,13 +38,14 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		status   int
 	)
 
-	// Пишу сюда, потому что в пачке в личку сказали не писать
-	// Если контекст создать и пользователь отменит запрос
-	// Такой контекст сработает?
 	ctx := r.Context()
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+
+	cookie, _ := r.Cookie("Token")
+
+	userID, _ := cookies.GetUserId(cookie.Value)
 
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
@@ -54,7 +56,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortenURL(ctx, string(longURL))
+	shortid, err = h.storage.GetShortenURL(ctx, string(longURL), userID)
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -64,7 +66,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	if len(shortid) == 0 {
 		shortid = utils.GenerateRandomString(8)
 		status = http.StatusCreated
-		err = h.storage.SaveURL(ctx, shortid, string(longURL))
+		err = h.storage.SaveURL(ctx, shortid, string(longURL), userID)
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -93,6 +95,10 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	cookie, _ := r.Cookie("Token")
+
+	userID, _ := cookies.GetUserId(cookie.Value)
+
 	// читаем тело запроса
 	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
@@ -109,7 +115,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	longURL := req.URL
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortenURL(ctx, longURL)
+	shortid, err = h.storage.GetShortenURL(ctx, longURL, userID)
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -118,7 +124,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	if len(shortid) == 0 {
 		shortid = utils.GenerateRandomString(8)
 		status = http.StatusCreated
-		err = h.storage.SaveURL(ctx, shortid, longURL)
+		err = h.storage.SaveURL(ctx, shortid, longURL, userID)
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -156,6 +162,10 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	cookie, _ := r.Cookie("Token")
+
+	userID, _ := cookies.GetUserId(cookie.Value)
+
 	//получим ID из запроса
 	shortid := r.URL.Path[1:]
 
@@ -176,7 +186,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	originURL, err := h.storage.GetOriginalURL(ctx, id)
+	originURL, err := h.storage.GetOriginalURL(ctx, id, userID)
 	if err != nil || len(originURL) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		h.logger.Log.Infoln(err, originURL)
@@ -215,6 +225,10 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	cookie, _ := r.Cookie("Token")
+
+	userID, _ := cookies.GetUserId(cookie.Value)
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		h.logger.Log.Error("Error read body request", err)
@@ -231,7 +245,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range batchinput {
 
-		shortid, err = h.storage.GetShortenURL(ctx, v.OriginalURL)
+		shortid, err = h.storage.GetShortenURL(ctx, v.OriginalURL, userID)
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -240,7 +254,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 		if len(shortid) == 0 {
 			shortid = utils.GenerateRandomString(8)
-			err = h.storage.SaveURL(ctx, shortid, string(v.OriginalURL))
+			err = h.storage.SaveURL(ctx, shortid, string(v.OriginalURL), userID)
 			if err != nil {
 				h.logger.Log.Error("Error save data", err)
 			}
@@ -267,4 +281,37 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 		h.logger.Log.Error("Error serialization", err)
 		return
 	}
+}
+
+func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	cookie, _ := r.Cookie("Token")
+
+	userID, _ := cookies.GetUserId(cookie.Value)
+
+	// находим все ссылки, которые сокращал данный пользователь
+	// если таковых нет, ответ короткий
+	allURLS, err := h.storage.GetUrlsUser(ctx, userID)
+	if err != nil || len(allURLS) == 0 {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	//сериализуем ответ сервера
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(allURLS); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		h.logger.Log.Error("Error serialization", err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+
 }

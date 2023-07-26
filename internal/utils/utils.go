@@ -2,8 +2,10 @@ package utils
 
 import (
 	"bufio"
+	"encoding/binary"
 	"encoding/json"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -31,10 +33,10 @@ func GenerateRandomString(length int) string {
 }
 
 // Поиск короткой ссылки по длинной
-func TryFoundShortURL(longURL string, s []models.StorageURL) (url string) {
+func TryFoundShortURL(userID uint64, longURL string, s []models.StorageURL) (url string) {
 
 	for _, ur := range s {
-		if ur.OriginalURL == longURL {
+		if ur.OriginalURL == longURL && ur.UserID == userID {
 			url = ur.ShortURL
 			return url
 		}
@@ -43,9 +45,9 @@ func TryFoundShortURL(longURL string, s []models.StorageURL) (url string) {
 }
 
 // Поиск длинной ссылки по короткой
-func TryFoundOrigURL(shortURL string, s []models.StorageURL) (url string) {
+func TryFoundOrigURL(userID uint64, shortURL string, s []models.StorageURL) (url string) {
 	for _, ur := range s {
-		if ur.ShortURL == shortURL {
+		if ur.ShortURL == shortURL && ur.UserID == userID {
 			url = ur.OriginalURL
 			return url
 		}
@@ -97,4 +99,41 @@ func ReadFile(path string, logger *logger.Logger) []models.StorageURL {
 	}
 
 	return storageURL
+}
+
+// Генерация уникального ID для пользователя
+func GenerateUniqueID() uint64 {
+
+	time := time.Now().UnixNano()
+
+	randomBytes := make([]byte, 8)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Конвертируем случайное число в uint64
+	randomNumber := binary.BigEndian.Uint64(randomBytes)
+
+	// Добавляем к времени случайное число
+	uniqueNumber := uint64(time) + randomNumber
+
+	return uniqueNumber
+}
+
+// Поиск ссылок в файле по юзеру
+func TryFoundUserURLS(userID uint64, s []models.StorageURL) ([]models.StorageURL, error) {
+	store := make([]models.StorageURL, 0)
+
+	for _, line := range s {
+		if line.UserID == userID {
+			store = append(store, line)
+		}
+	}
+
+	if len(store) == 0 {
+		return nil, nil
+	}
+
+	return store, nil
 }

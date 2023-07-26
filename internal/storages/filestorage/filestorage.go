@@ -32,7 +32,7 @@ func New(path string, log *logger.Logger) *filestorage {
 		log:             log}
 }
 
-func (s *filestorage) Save(ctx context.Context, url1, url2 string) error {
+func (s *filestorage) Save(ctx context.Context, url1, url2 string, userID uint64) error {
 
 	var longShortURL models.StorageURL
 
@@ -54,7 +54,7 @@ func (s *filestorage) Save(ctx context.Context, url1, url2 string) error {
 	}
 }
 
-func (s *filestorage) GetShortURL(ctx context.Context, inputURL string) (string, error) {
+func (s *filestorage) GetShortURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -63,7 +63,7 @@ func (s *filestorage) GetShortURL(ctx context.Context, inputURL string) (string,
 
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
-	foundurl = utils.TryFoundShortURL(inputURL, storageURL)
+	foundurl = utils.TryFoundShortURL(userID, inputURL, storageURL)
 
 	select {
 	case <-ctx.Done():
@@ -73,7 +73,7 @@ func (s *filestorage) GetShortURL(ctx context.Context, inputURL string) (string,
 	}
 }
 
-func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
+func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string, userID uint64) (string, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -82,7 +82,7 @@ func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string
 
 	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
 
-	foundurl = utils.TryFoundOrigURL(inputURL, storageURL)
+	foundurl = utils.TryFoundOrigURL(userID, inputURL, storageURL)
 
 	select {
 	case <-ctx.Done():
@@ -101,4 +101,18 @@ func (s *filestorage) Ping(ctx context.Context) error {
 	default:
 		return nil
 	}
+}
+
+func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint64) ([]models.StorageURL, error) {
+
+	var (
+		storageURL []models.StorageURL
+	)
+
+	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
+	userURLS, err := utils.TryFoundUserURLS(userID, storageURL)
+	if err != nil {
+		return nil, err
+	}
+	return userURLS, nil
 }
