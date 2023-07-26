@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -59,7 +58,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	}
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
-	if err != nil || string(longURL) == " " {
+	if err != nil || len(longURL) == 0 {
 		h.logger.Log.Error("Empty body")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -182,21 +181,6 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cookie, err := r.Cookie("Token")
-	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	userID, err := cookies.GetUserID(cookie.Value)
-	fmt.Println(cookie.Value)
-	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	//получим ID из запроса
 	shortid := r.URL.Path[1:]
 
@@ -210,7 +194,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	} else {
 		id = shortid
 		if len(id) == 0 {
-			h.logger.Log.Infoln("Empty id in Get request", userID)
+			h.logger.Log.Infoln("Empty id in Get request")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
