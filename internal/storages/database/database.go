@@ -99,6 +99,9 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 		var store models.StorageURL
 		err = rows.Scan(&store.UserID, &store.ShortURL, &store.OriginalURL)
 		if err != nil {
+			if !errors.Is(err, sql.ErrNoRows) {
+				return nil, err
+			}
 			return nil, err
 		}
 
