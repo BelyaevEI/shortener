@@ -22,7 +22,7 @@ func New(DBpath string, log *logger.Logger) *database {
 		log.Log.Error(err)
 	}
 
-	_, err = db.Exec("create table IF NOT EXISTS storage_urls(userID NOT NULL, short text not null, long text not null)")
+	_, err = db.Exec("create table IF NOT EXISTS storage_urls(userID int NOT NULL, short text not null, long text not null)")
 	if err != nil {
 		log.Log.Error("Error create tabele", err)
 		return nil
