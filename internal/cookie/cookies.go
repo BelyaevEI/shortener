@@ -27,6 +27,7 @@ func NewCookie(w http.ResponseWriter, userID uint64) {
 	cookie := &http.Cookie{
 		Name:  "Token",
 		Value: token,
+		Path:  "/",
 	}
 
 	http.SetCookie(w, cookie)
@@ -89,6 +90,6 @@ func GetUserID(tokenString string) (uint64, error) {
 		return 0, err
 	}
 
-	fmt.Println("Token os valid")
+	fmt.Println("Token os valid", claims.UserID)
 	return claims.UserID, nil
 }

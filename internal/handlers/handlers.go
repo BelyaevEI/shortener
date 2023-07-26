@@ -43,10 +43,19 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cookie, _ := r.Cookie("Token")
+	cookie, err := r.Cookie("Token")
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	userID, _ := cookies.GetUserID(cookie.Value)
-
+	userID, err := cookies.GetUserID(cookie.Value)
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
 	if err != nil || string(longURL) == " " {
@@ -95,12 +104,22 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cookie, _ := r.Cookie("Token")
+	cookie, err := r.Cookie("Token")
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	userID, _ := cookies.GetUserID(cookie.Value)
+	userID, err := cookies.GetUserID(cookie.Value)
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// читаем тело запроса
-	_, err := buf.ReadFrom(r.Body)
+	_, err = buf.ReadFrom(r.Body)
 	if err != nil {
 		h.logger.Log.Error(err)
 		return
@@ -162,9 +181,19 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cookie, _ := r.Cookie("Token")
+	cookie, err := r.Cookie("Token")
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	userID, _ := cookies.GetUserID(cookie.Value)
+	userID, err := cookies.GetUserID(cookie.Value)
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	//получим ID из запроса
 	shortid := r.URL.Path[1:]
@@ -179,7 +208,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	} else {
 		id = shortid
 		if len(id) == 0 {
-			h.logger.Log.Info("Empty id in Get request")
+			h.logger.Log.Infoln("Empty id in Get request", userID)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -225,9 +254,19 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cookie, _ := r.Cookie("Token")
+	cookie, err := r.Cookie("Token")
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	userID, _ := cookies.GetUserID(cookie.Value)
+	userID, err := cookies.GetUserID(cookie.Value)
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -290,9 +329,19 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cookie, _ := r.Cookie("Token")
+	cookie, err := r.Cookie("Token")
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	userID, _ := cookies.GetUserID(cookie.Value)
+	userID, err := cookies.GetUserID(cookie.Value)
+	if err != nil {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// находим все ссылки, которые сокращал данный пользователь
 	// если таковых нет, ответ короткий
