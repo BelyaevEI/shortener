@@ -36,6 +36,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		shortid  string
 		shortURL string
 		status   int
+		userID   uint64
 	)
 
 	ctx := r.Context()
@@ -45,17 +46,15 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie("Token")
 	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		userID = utils.GenerateUniqueID()
+	} else {
+		// userID должен быть всегда
+		userID, _ = cookies.GetUserID(cookie.Value)
 	}
-
-	// userID должен быть всегда
-	userID, _ := cookies.GetUserID(cookie.Value)
 
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
-	if err != nil || len(longURL) == 0 {
+	if err != nil || string(longURL) == "" {
 		h.logger.Log.Error("Empty body")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -94,6 +93,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 		buf      bytes.Buffer
 		shortid  string
 		status   int
+		userID   uint64
 	)
 
 	ctx := r.Context()
@@ -103,16 +103,10 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie("Token")
 	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	userID, err := cookies.GetUserID(cookie.Value)
-	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		userID = utils.GenerateUniqueID()
+	} else {
+		// userID должен быть всегда
+		userID, _ = cookies.GetUserID(cookie.Value)
 	}
 
 	// читаем тело запроса
@@ -230,6 +224,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 		batchoutput []models.Batch
 		shortid     string
 		shortURL    string
+		userID      uint64
 	)
 
 	ctx := r.Context()
@@ -239,16 +234,10 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie("Token")
 	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	userID, err := cookies.GetUserID(cookie.Value)
-	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		userID = utils.GenerateUniqueID()
+	} else {
+		// userID должен быть всегда
+		userID, _ = cookies.GetUserID(cookie.Value)
 	}
 
 	body, err := io.ReadAll(r.Body)

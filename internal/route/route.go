@@ -14,7 +14,7 @@ func New(h handlers.Handlers, log *logger.Logger) *chi.Mux {
 	// Подключаем middleware
 	r.Use(m.Gzip)
 	r.Use(log.Logger)
-	// r.Use(m.Cookie)
+	r.Use(m.Cookie)
 
 	r.Get("/{id}", h.ReplaceGET)
 	r.Post("/api/shorten", h.PostAPI)

@@ -23,19 +23,12 @@ func New(log *logger.Logger) *cache {
 
 func (c *cache) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageShortURL[inputURL]
-
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	default:
-		return foundurl, nil
-	}
+	return foundurl, nil
 
 }
 
 func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageOriginURL[inputURL]
-
 	return foundurl, nil
 
 }
