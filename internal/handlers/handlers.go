@@ -50,12 +50,8 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// userID должен быть всегда
 	userID, _ := cookies.GetUserID(cookie.Value)
-	// if err != nil {
-	// 	h.logger.Log.Error(err)
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
 
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
