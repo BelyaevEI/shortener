@@ -44,7 +44,7 @@ func (s *filestorage) Save(ctx context.Context, url1, url2 string, userID uint64
 
 	defer file.Close()
 
-	longShortURL.OriginalURL, longShortURL.ShortURL = url2, url1
+	longShortURL.UserID, longShortURL.OriginalURL, longShortURL.ShortURL = userID, url2, url1
 	encoder := json.NewEncoder(file)
 	select {
 	case <-ctx.Done():
