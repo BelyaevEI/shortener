@@ -13,10 +13,10 @@ const secretKey = "supersecretkey"
 
 type Claims struct {
 	jwt.RegisteredClaims
-	UserID uint64
+	UserID uint32
 }
 
-func NewCookie(w http.ResponseWriter, userID uint64) {
+func NewCookie(w http.ResponseWriter, userID uint32) {
 
 	token, err := createToken(userID)
 	if err != nil {
@@ -54,7 +54,7 @@ func Validation(tokenString string) bool {
 	return true
 }
 
-func createToken(userID uint64) (string, error) {
+func createToken(userID uint32) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenExp)),
@@ -70,7 +70,7 @@ func createToken(userID uint64) (string, error) {
 	return tokenString, nil
 }
 
-func GetUserID(tokenString string) (uint64, error) {
+func GetUserID(tokenString string) (uint32, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims,
 		func(t *jwt.Token) (interface{}, error) {

@@ -32,7 +32,7 @@ func New(path string, log *logger.Logger) *filestorage {
 		log:             log}
 }
 
-func (s *filestorage) Save(ctx context.Context, url1, url2 string, userID uint64) error {
+func (s *filestorage) Save(ctx context.Context, url1, url2 string, userID uint32) error {
 
 	var longShortURL models.StorageURL
 
@@ -103,7 +103,7 @@ func (s *filestorage) Ping(ctx context.Context) error {
 	}
 }
 
-func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint64) ([]models.StorageURL, error) {
+func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
 
 	storageURL := utils.ReadFile(s.FileStoragePath, s.log)
 	userURLS, err := utils.TryFoundUserURLS(userID, storageURL)

@@ -35,7 +35,7 @@ func New(DBpath string, log *logger.Logger) *database {
 	}
 }
 
-func (d *database) Save(ctx context.Context, url1, url2 string, userID uint64) error {
+func (d *database) Save(ctx context.Context, url1, url2 string, userID uint32) error {
 	_, err := d.db.ExecContext(ctx, "insert into storage_urls(userID, short, long) values ($1, $2, $3)", userID, url1, url2)
 	return err
 }
@@ -87,7 +87,7 @@ func (d *database) Ping(ctx context.Context) error {
 	}
 }
 
-func (d *database) GetUrlsUser(ctx context.Context, userID uint64) ([]models.StorageURL, error) {
+func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
 	storageURLS := make([]models.StorageURL, 0)
 
 	rows, err := d.db.QueryContext(ctx, "SELECT userID, short, long from storage_urls WHERE userID=$1", userID)

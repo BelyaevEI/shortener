@@ -33,7 +33,7 @@ func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, erro
 
 }
 
-func (c *cache) Save(ctx context.Context, shortURL, longURL string, userID uint64) error {
+func (c *cache) Save(ctx context.Context, shortURL, longURL string, userID uint32) error {
 	c.storageShortURL[longURL] = shortURL
 	c.storageOriginURL[shortURL] = longURL
 	return nil
@@ -44,6 +44,6 @@ func (c *cache) Ping(ctx context.Context) error {
 	return nil
 }
 
-func (c *cache) GetUrlsUser(ctx context.Context, userID uint64) ([]models.StorageURL, error) {
+func (c *cache) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
 	return nil, nil
 }

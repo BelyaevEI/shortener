@@ -36,7 +36,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 		shortid  string
 		shortURL string
 		status   int
-		userID   uint64
+		userID   uint32
 	)
 
 	ctx := r.Context()
@@ -93,7 +93,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 		buf      bytes.Buffer
 		shortid  string
 		status   int
-		userID   uint64
+		userID   uint32
 	)
 
 	ctx := r.Context()
@@ -224,7 +224,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 		batchoutput []models.Batch
 		shortid     string
 		shortURL    string
-		userID      uint64
+		userID      uint32
 	)
 
 	ctx := r.Context()

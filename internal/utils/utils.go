@@ -102,27 +102,27 @@ func ReadFile(path string, logger *logger.Logger) []models.StorageURL {
 }
 
 // Генерация уникального ID для пользователя
-func GenerateUniqueID() uint64 {
+func GenerateUniqueID() uint32 {
 
 	time := time.Now().UnixNano()
 
-	randomBytes := make([]byte, 8)
+	randomBytes := make([]byte, 4)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Конвертируем случайное число в uint64
-	randomNumber := binary.BigEndian.Uint64(randomBytes)
+	randomNumber := binary.BigEndian.Uint32(randomBytes)
 
 	// Добавляем к времени случайное число
-	uniqueNumber := uint64(time) + randomNumber
+	uniqueNumber := uint32(time) + randomNumber
 
 	return uniqueNumber
 }
 
 // Поиск ссылок в файле по юзеру
-func TryFoundUserURLS(userID uint64, s []models.StorageURL) ([]models.StorageURL, error) {
+func TryFoundUserURLS(userID uint32, s []models.StorageURL) ([]models.StorageURL, error) {
 	store := make([]models.StorageURL, 0)
 
 	for _, line := range s {
