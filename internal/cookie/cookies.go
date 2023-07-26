@@ -8,8 +8,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const token_exp = time.Hour * 3
-const secret_key = "supersecretkey"
+const tokenExp = time.Hour * 3
+const secretKey = "supersecretkey"
 
 type Claims struct {
 	jwt.RegisteredClaims
@@ -39,7 +39,7 @@ func Validation(tokenString string) bool {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
-			return []byte(secret_key), nil
+			return []byte(secretKey), nil
 		})
 
 	if err != nil {
@@ -58,12 +58,12 @@ func Validation(tokenString string) bool {
 func createToken(userID uint64) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(token_exp)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenExp)),
 		},
 		UserID: userID,
 	})
 
-	tokenString, err := token.SignedString([]byte(secret_key))
+	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}
@@ -78,7 +78,7 @@ func GetUserID(tokenString string) (uint64, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
-			return []byte(secret_key), nil
+			return []byte(secretKey), nil
 		})
 	if err != nil {
 		return 0, err
