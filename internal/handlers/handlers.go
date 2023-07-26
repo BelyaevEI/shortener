@@ -45,7 +45,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	cookie, _ := r.Cookie("Token")
 
-	userID, _ := cookies.GetUserId(cookie.Value)
+	userID, _ := cookies.GetUserID(cookie.Value)
 
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
@@ -97,7 +97,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 
 	cookie, _ := r.Cookie("Token")
 
-	userID, _ := cookies.GetUserId(cookie.Value)
+	userID, _ := cookies.GetUserID(cookie.Value)
 
 	// читаем тело запроса
 	_, err := buf.ReadFrom(r.Body)
@@ -164,7 +164,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 	cookie, _ := r.Cookie("Token")
 
-	userID, _ := cookies.GetUserId(cookie.Value)
+	userID, _ := cookies.GetUserID(cookie.Value)
 
 	//получим ID из запроса
 	shortid := r.URL.Path[1:]
@@ -227,7 +227,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	cookie, _ := r.Cookie("Token")
 
-	userID, _ := cookies.GetUserId(cookie.Value)
+	userID, _ := cookies.GetUserID(cookie.Value)
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -292,7 +292,7 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	cookie, _ := r.Cookie("Token")
 
-	userID, _ := cookies.GetUserId(cookie.Value)
+	userID, _ := cookies.GetUserID(cookie.Value)
 
 	// находим все ссылки, которые сокращал данный пользователь
 	// если таковых нет, ответ короткий

@@ -8,8 +8,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const TOKEN_EXP = time.Hour * 3
-const SECRET_KEY = "supersecretkey"
+const token_exp = time.Hour * 3
+const secret_key = "supersecretkey"
 
 type Claims struct {
 	jwt.RegisteredClaims
@@ -39,7 +39,7 @@ func Validation(tokenString string) bool {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
-			return []byte(SECRET_KEY), nil
+			return []byte(secret_key), nil
 		})
 
 	if err != nil {
@@ -58,12 +58,12 @@ func Validation(tokenString string) bool {
 func createToken(userID uint64) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(token_exp)),
 		},
 		UserID: userID,
 	})
 
-	tokenString, err := token.SignedString([]byte(SECRET_KEY))
+	tokenString, err := token.SignedString([]byte(secret_key))
 	if err != nil {
 		return "", err
 	}
@@ -71,14 +71,14 @@ func createToken(userID uint64) (string, error) {
 	return tokenString, nil
 }
 
-func GetUserId(tokenString string) (uint64, error) {
+func GetUserID(tokenString string) (uint64, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims,
 		func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
-			return []byte(SECRET_KEY), nil
+			return []byte(secret_key), nil
 		})
 	if err != nil {
 		return 0, err

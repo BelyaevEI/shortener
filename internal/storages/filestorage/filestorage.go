@@ -105,11 +105,7 @@ func (s *filestorage) Ping(ctx context.Context) error {
 
 func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint64) ([]models.StorageURL, error) {
 
-	var (
-		storageURL []models.StorageURL
-	)
-
-	storageURL = utils.ReadFile(s.FileStoragePath, s.log)
+	storageURL := utils.ReadFile(s.FileStoragePath, s.log)
 	userURLS, err := utils.TryFoundUserURLS(userID, storageURL)
 	if err != nil {
 		return nil, err
