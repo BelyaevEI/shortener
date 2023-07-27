@@ -58,9 +58,9 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Считаем из тела запроса строку URL
-	longURL, err := io.ReadAll(r.Body)
-	if err != nil {
-		h.logger.Log.Error(err)
+	longURL, errs := io.ReadAll(r.Body)
+	if errs != nil {
+		h.logger.Log.Error(errs)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
