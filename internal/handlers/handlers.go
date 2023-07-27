@@ -58,9 +58,9 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Считаем из тела запроса строку URL
-	longURL, errs := io.ReadAll(r.Body)
-	if errs != nil {
-		h.logger.Log.Error(errs)
+	longURL, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -307,11 +307,11 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 	var (
-		userID uint32
-		// userKeyID any
+		userID    uint32
+		userKeyID any
 	)
 
-	// const keyID models.KeyID = "userID"
+	const keyID models.KeyID = "userID"
 
 	fullAllURLS := make([]models.StorageURL, 0)
 
@@ -321,27 +321,32 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	cookie, err := r.Cookie("Token")
+	if err != nil {
+		userKeyID = ctx.Value(keyID)
+		if ID, ok := userKeyID.(uint32); ok {
+			userID = ID
+		}
+	} else {
+		userID, err = cookies.GetUserID(cookie.Value)
+		if err != nil {
+			h.logger.Log.Error(err)
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+	}
+
 	// if err != nil {
-	// 	userKeyID = ctx.Value(keyID)
-	// 	if ID, ok := userKeyID.(uint32); ok {
-	// 		userID = ID
-	// 	}
-	// } else {
-	// 	userID, _ = cookies.GetUserID(cookie.Value)
+	// 	h.logger.Log.Error(err)
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	return
 	// }
 
-	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	userID, err = cookies.GetUserID(cookie.Value)
-	if err != nil {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	// userID, err = cookies.GetUserID(cookie.Value)
+	// if err != nil {
+	// 	h.logger.Log.Error(err)
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	return
+	// }
 
 	// находим все ссылки, которые сокращал данный пользователь
 	// если таковых нет, ответ короткий
