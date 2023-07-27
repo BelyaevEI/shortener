@@ -46,10 +46,8 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	// ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	// defer cancel()
-
-	cookie, err := r.Cookie("Token")
-
 	// userID должен быть всегда
+	cookie, err := r.Cookie("Token")
 	if err != nil {
 		userKeyID = ctx.Value(keyID)
 		if ID, ok := userKeyID.(uint32); ok {
@@ -61,8 +59,11 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
-	if err != nil || len(longURL) == 0 {
-		h.logger.Log.Error("Empty body")
+	if err != nil {
+		// len(longURL) == 0
+
+		// h.logger.Log.Error("Empty body")
+		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -302,6 +303,12 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
+	var (
+		userID uint32
+		// userKeyID any
+	)
+
+	// const keyID models.KeyID = "userID"
 
 	fullAllURLS := make([]models.StorageURL, 0)
 
@@ -311,13 +318,22 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	cookie, err := r.Cookie("Token")
+	// if err != nil {
+	// 	userKeyID = ctx.Value(keyID)
+	// 	if ID, ok := userKeyID.(uint32); ok {
+	// 		userID = ID
+	// 	}
+	// } else {
+	// 	userID, _ = cookies.GetUserID(cookie.Value)
+	// }
+
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	userID, err := cookies.GetUserID(cookie.Value)
+	userID, err = cookies.GetUserID(cookie.Value)
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusUnauthorized)
