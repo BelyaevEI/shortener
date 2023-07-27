@@ -61,7 +61,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
-	if err != nil || string(longURL) == "" {
+	if err != nil || len(longURL) == 0 {
 		h.logger.Log.Error("Empty body")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -303,6 +303,8 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 
+	fullAllURLS := make([]models.StorageURL, 0)
+
 	ctx := r.Context()
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -311,14 +313,14 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("Token")
 	if err != nil {
 		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	userID, err := cookies.GetUserID(cookie.Value)
 	if err != nil {
 		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -331,11 +333,19 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for _, v := range allURLS {
+		var store models.StorageURL
+		store.UserID = v.UserID
+		store.OriginalURL = v.OriginalURL
+		store.ShortURL = h.shortURL + "/" + v.ShortURL
+		fullAllURLS = append(fullAllURLS, store)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 
 	//сериализуем ответ сервера
 	enc := json.NewEncoder(w)
-	if err := enc.Encode(allURLS); err != nil {
+	if err := enc.Encode(fullAllURLS); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		h.logger.Log.Error("Error serialization", err)
 		return

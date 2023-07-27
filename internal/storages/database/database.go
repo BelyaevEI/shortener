@@ -102,7 +102,7 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 			if !errors.Is(err, sql.ErrNoRows) {
 				return nil, err
 			}
-			return nil, err
+			return nil, nil
 		}
 
 		storageURLS = append(storageURLS, store)
@@ -115,5 +115,9 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 	}
 
 	return storageURLS, nil
+
+}
+
+func SaveFullURL() {
 
 }
