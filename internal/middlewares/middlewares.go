@@ -45,15 +45,14 @@ import (
 // 				return
 // 			}
 
-// 			// меняем тело запроса на новое
-// 			r.Body = cr
-// 			defer cr.Close()
-// 		}
-// 		// передаём управление хендлеру
-// 		h.ServeHTTP(ow, r)
-// 	})
-// }
-
+//				// меняем тело запроса на новое
+//				r.Body = cr
+//				defer cr.Close()
+//			}
+//			// передаём управление хендлеру
+//			h.ServeHTTP(ow, r)
+//		})
+//	}
 func Gzip(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get(`Content-Encoding`) == `gzip` {
