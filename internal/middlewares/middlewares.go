@@ -1,12 +1,14 @@
 package midllewares
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/BelyaevEI/shortener/internal/compres"
 	cookies "github.com/BelyaevEI/shortener/internal/cookie"
+	"github.com/BelyaevEI/shortener/internal/models"
 	"github.com/BelyaevEI/shortener/internal/utils"
 )
 
@@ -56,6 +58,9 @@ func Gzip(h http.Handler) http.Handler {
 // Middleware - работа с куки
 func Cookie(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		const keyID models.KeyID = "userID"
+
 		cookie, err := r.Cookie("Token")
 
 		if err != nil {
@@ -68,6 +73,8 @@ func Cookie(h http.Handler) http.Handler {
 			// если кук нет, то сгенерируем
 			userID := utils.GenerateUniqueID()
 			cookies.NewCookie(w, userID)
+			ctx := context.WithValue(r.Context(), keyID, userID)
+			h.ServeHTTP(w, r.WithContext(ctx))
 		}
 
 		// если кук нет или валидация не прошла
@@ -75,6 +82,8 @@ func Cookie(h http.Handler) http.Handler {
 		if cookie == nil || !cookies.Validation(cookie.Value) {
 			userID := utils.GenerateUniqueID()
 			cookies.NewCookie(w, userID)
+			ctx := context.WithValue(r.Context(), keyID, userID)
+			h.ServeHTTP(w, r.WithContext(ctx))
 		}
 
 		h.ServeHTTP(w, r)

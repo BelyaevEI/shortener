@@ -30,4 +30,6 @@ type (
 		OriginalURL   string `json:"original_url,omitempty"`
 		ShortURL      string `json:"short_url,omitempty"`
 	}
+
+	KeyID string
 )

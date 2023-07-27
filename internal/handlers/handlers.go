@@ -33,22 +33,29 @@ func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers
 func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	var (
-		shortid  string
-		shortURL string
-		status   int
-		userID   uint32
+		shortid   string
+		shortURL  string
+		status    int
+		userID    uint32
+		userKeyID any
 	)
+
+	const keyID models.KeyID = "userID"
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	// defer cancel()
 
 	cookie, err := r.Cookie("Token")
+
+	// userID должен быть всегда
 	if err != nil {
-		userID = utils.GenerateUniqueID()
+		userKeyID = ctx.Value(keyID)
+		if ID, ok := userKeyID.(uint32); ok {
+			userID = ID
+		}
 	} else {
-		// userID должен быть всегда
 		userID, _ = cookies.GetUserID(cookie.Value)
 	}
 
@@ -71,7 +78,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	if len(shortid) == 0 {
 		shortid = utils.GenerateRandomString(8)
 		status = http.StatusCreated
-		err = h.storage.SaveURL(ctx, shortid, string(longURL), userID)
+		err = h.storage.SaveURL(ctx, shortid, string(longURL), uint32(userID))
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -83,6 +90,45 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	shortURL = h.shortURL + "/" + shortid
 	utils.Response(w, "Content-Type", "text/plain", shortURL, status)
+}
+
+func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
+
+	var id string
+
+	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	//получим ID из запроса
+	shortid := r.URL.Path[1:]
+
+	if strings.ContainsRune(shortid, '/') {
+		id = strings.Split(shortid, "/")[0]
+		if len(id) == 0 {
+			h.logger.Log.Info("Empty id in Get request")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	} else {
+		id = shortid
+		if len(id) == 0 {
+			h.logger.Log.Infoln("Empty id in Get request")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Проверяем существование ссылки
+	originURL, err := h.storage.GetOriginalURL(ctx, id)
+	if err != nil || len(originURL) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		h.logger.Log.Infoln(err, originURL)
+		return
+	}
+
+	utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
 }
 
 func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
@@ -161,45 +207,6 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-}
-
-func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
-
-	var id string
-
-	ctx := r.Context()
-
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	//получим ID из запроса
-	shortid := r.URL.Path[1:]
-
-	if strings.ContainsRune(shortid, '/') {
-		id = strings.Split(shortid, "/")[0]
-		if len(id) == 0 {
-			h.logger.Log.Info("Empty id in Get request")
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	} else {
-		id = shortid
-		if len(id) == 0 {
-			h.logger.Log.Infoln("Empty id in Get request")
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	}
-
-	// Проверяем существование ссылки
-	originURL, err := h.storage.GetOriginalURL(ctx, id)
-	if err != nil || len(originURL) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		h.logger.Log.Infoln(err, originURL)
-		return
-	}
-
-	utils.Response(w, "Location", originURL, originURL, http.StatusTemporaryRedirect)
 }
 
 func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
