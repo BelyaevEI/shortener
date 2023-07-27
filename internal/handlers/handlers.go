@@ -59,17 +59,17 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	//Считаем из тела запроса строку URL
 	longURL, err := io.ReadAll(r.Body)
-	if err != nil || len(longURL) == 0 {
+	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if len(longURL) == 0 {
-		h.logger.Log.Error("Empty body")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	// if len(longURL) == 0 {
+	// 	h.logger.Log.Error("Empty body")
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	return
+	// }
 
 	// Проверяем существование ссылки
 	shortid, err = h.storage.GetShortenURL(ctx, string(longURL))
