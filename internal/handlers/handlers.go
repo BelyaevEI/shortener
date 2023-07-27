@@ -334,7 +334,6 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
 	// if err != nil {
 	// 	h.logger.Log.Error(err)
 	// 	w.WriteHeader(http.StatusUnauthorized)
