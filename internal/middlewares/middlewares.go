@@ -104,6 +104,5 @@ func Cookie(h http.Handler) http.Handler {
 		}
 
 		h.ServeHTTP(w, r)
-
 	})
 }
