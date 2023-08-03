@@ -104,7 +104,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 
 	//получим ID из запроса
@@ -155,7 +155,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 
 	cookie, err := r.Cookie("Token")
@@ -224,7 +224,7 @@ func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 
 	if err := h.storage.Ping(ctx); err != nil {
@@ -247,7 +247,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 
 	cookie, err := r.Cookie("Token")
@@ -325,7 +325,7 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 
 	cookie, err := r.Cookie("Token")
