@@ -190,7 +190,3 @@ func Generator(doneCh chan struct{}, input []models.StorageURL) chan models.Stor
 
 	return inputCh
 }
-
-func UpdateStorage() {
-
-}

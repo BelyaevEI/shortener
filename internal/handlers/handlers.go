@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	cookies "github.com/BelyaevEI/shortener/internal/cookie"
@@ -450,7 +451,7 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 		inputCh := utils.Generator(doneCh, delURLS)
 
 		// понадобится для ожидания всех горутин
-		// var wg sync.WaitGroup
+		var wg sync.WaitGroup
 
 		go func() {
 
@@ -458,21 +459,21 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 				data, closed := <-inputCh
 				if !closed {
 					// инкрементируем счётчик горутин, которые нужно подождать
-					// wg.Add(1)
+					wg.Add(1)
 
 					// тут удаляем
 					h.storage.UpdateDeletedFlag(ctx, data)
 
 					// помечаем об выполнении горутины
-					// wg.Done()
+					wg.Done()
 				}
 			}
 		}()
 
-		// go func() {
-		// ждём завершения всех горутин
-		// wg.Wait()
-		// }()
+		go func() {
+			// ждём завершения всех горутин
+			wg.Wait()
+		}()
 
 		return
 	}
