@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	cookies "github.com/BelyaevEI/shortener/internal/cookie"
@@ -104,7 +103,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
 	//получим ID из запроса
@@ -155,7 +154,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
 	cookie, err := r.Cookie("Token")
@@ -224,7 +223,7 @@ func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
 	if err := h.storage.Ping(ctx); err != nil {
@@ -247,7 +246,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
 	cookie, err := r.Cookie("Token")
@@ -325,7 +324,7 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
 	cookie, err := r.Cookie("Token")
@@ -385,8 +384,8 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	// defer cancel()
 
 	cookie, err := r.Cookie("Token")
 	if err != nil {
@@ -395,23 +394,8 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 			userID = ID
 		}
 	} else {
-		userID, err = cookies.GetUserID(cookie.Value)
-		if err != nil {
-			h.logger.Log.Error(err)
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		userID, _ = cookies.GetUserID(cookie.Value)
 	}
-
-	// cookie, err := r.Cookie("Token")
-	// if err != nil {
-	// 	userKeyID = ctx.Value(keyID)
-	// 	if ID, ok := userKeyID.(uint32); ok {
-	// 		userID = ID
-	// 	}
-	// } else {
-	// 	userID, _ = cookies.GetUserID(cookie.Value)
-	// }
 
 	// читаем ссылки отправленые для удаления
 	body, err := io.ReadAll(r.Body)
@@ -439,44 +423,10 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 	//помечаем для удаления ссылки
 	delURLS := utils.MarkDeletion(allURLS, utils.RemoveDuplicate(deleteURLS))
 	if len(delURLS) != 0 {
+		for _, data := range delURLS {
+			go h.storage.UpdateDeletedFlag(ctx, data)
+		}
+
 		w.WriteHeader(http.StatusAccepted)
-
-		// сигнальный канал для завершения горутин
-		doneCh := make(chan struct{})
-
-		// закрываем его при завершении программы
-		defer close(doneCh)
-
-		// канал с данными
-		inputCh := utils.Generator(doneCh, delURLS)
-
-		// понадобится для ожидания всех горутин
-		var wg sync.WaitGroup
-
-		go func() {
-
-			for {
-				data, closed := <-inputCh
-				if !closed {
-					// инкрементируем счётчик горутин, которые нужно подождать
-					wg.Add(1)
-
-					// тут удаляем
-					h.storage.UpdateDeletedFlag(ctx, data)
-
-					// помечаем об выполнении горутины
-					wg.Done()
-				}
-			}
-		}()
-
-		go func() {
-			// ждём завершения всех горутин
-			wg.Wait()
-		}()
-
-		return
 	}
-
-	w.WriteHeader(http.StatusBadRequest)
 }

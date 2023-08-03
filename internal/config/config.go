@@ -5,14 +5,14 @@ import (
 	"os"
 )
 
-type parameters struct {
+type Parameters struct {
 	FlagRunAddr     string
 	ShortURL        string
 	FileStoragePath string
 	DBpath          string
 }
 
-func ParseFlags() parameters {
+func ParseFlags() Parameters {
 
 	var (
 		flagRunAddr     string
@@ -63,7 +63,7 @@ func ParseFlags() parameters {
 		dbpath = envDBStoragePath
 	}
 
-	return parameters{
+	return Parameters{
 		FlagRunAddr:     flagRunAddr,
 		ShortURL:        shortURL,
 		FileStoragePath: fileStoragePath,
