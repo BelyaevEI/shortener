@@ -384,9 +384,9 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
-	defer cancel()
-
+	// ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	// defer cancel()
+	// userID должен быть всегда
 	cookie, err := r.Cookie("Token")
 	if err != nil {
 		userKeyID = ctx.Value(keyID)
