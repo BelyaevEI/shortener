@@ -43,3 +43,7 @@ func (s *Storage) Ping(ctx context.Context) error {
 func (s *Storage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
 	return s.storage.GetUrlsUser(ctx, userID)
 }
+
+func (s *Storage) UpdateDeletedFlag(ctx context.Context, data models.StorageURL) error {
+	return s.storage.UpdateDeletedFlag(ctx, data)
+}

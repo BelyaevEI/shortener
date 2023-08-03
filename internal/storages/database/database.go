@@ -22,7 +22,7 @@ func New(DBpath string, log *logger.Logger) *database {
 		log.Log.Error(err)
 	}
 
-	_, err = db.Exec("create table IF NOT EXISTS storage_urls(userID bigint NOT NULL, short text not null, long text not null)")
+	_, err = db.Exec("create table IF NOT EXISTS storage_urls(userID bigint NOT NULL, short text not null, long text not null, deleted bool)")
 	if err != nil {
 		log.Log.Error("Error create tabele", err)
 		return nil
@@ -62,14 +62,18 @@ func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, e
 	var (
 		foundURL string
 		err      error
+		deleted  bool
 	)
 
-	row := d.db.QueryRowContext(ctx, "select long from storage_urls where short=$1", inputURL)
-	if err = row.Scan(&foundURL); err != nil {
+	row := d.db.QueryRowContext(ctx, "select long, deleted from storage_urls where short=$1", inputURL)
+	if err = row.Scan(&foundURL, &deleted); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", err
 		}
 		return "", nil
+	}
+	if deleted {
+		return foundURL, errors.New("deleted url")
 	}
 	return foundURL, nil
 }
@@ -118,6 +122,7 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 
 }
 
-func SaveFullURL() {
-
+func (d *database) UpdateDeletedFlag(ctx context.Context, data models.StorageURL) error {
+	_, err := d.db.ExecContext(ctx, "update storage_urls set deleted = true where userID=$1 and short=$2 and long=$3", data.UserID, data.ShortURL, data.OriginalURL)
+	return err
 }

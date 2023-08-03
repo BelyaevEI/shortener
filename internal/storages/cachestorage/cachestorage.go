@@ -47,3 +47,7 @@ func (c *cache) Ping(ctx context.Context) error {
 func (c *cache) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
 	return nil, nil
 }
+
+func (c *cache) UpdateDeletedFlag(ctx context.Context, data models.StorageURL) error {
+	return nil
+}

@@ -137,3 +137,60 @@ func TryFoundUserURLS(userID uint32, s []models.StorageURL) ([]models.StorageURL
 
 	return store, nil
 }
+
+func RemoveDuplicate(deleteURLS []models.ShortURL) []models.ShortURL {
+	var result []models.ShortURL
+
+	dd := make(map[string]struct{})
+
+	for _, v := range deleteURLS {
+		if _, ok := dd[v.ShortURL]; !ok {
+			dd[v.ShortURL] = struct{}{}
+
+			var res models.ShortURL
+			res.ShortURL = v.ShortURL
+			result = append(result, res)
+		}
+	}
+	return result
+}
+
+func MarkDeletion(userURLS []models.StorageURL, deleteURLS []models.ShortURL) []models.StorageURL {
+	var del models.StorageURL
+	markDel := make([]models.StorageURL, 0)
+
+	for _, varDel := range deleteURLS {
+		for _, v := range userURLS {
+			if !v.DeletedFlag && v.ShortURL == varDel.ShortURL {
+				del.DeletedFlag = true
+				del.OriginalURL = v.OriginalURL
+				del.ShortURL = v.ShortURL
+				del.UserID = v.UserID
+				markDel = append(markDel, del)
+			}
+		}
+	}
+	return markDel
+}
+
+func Generator(doneCh chan struct{}, input []models.StorageURL) chan models.StorageURL {
+	inputCh := make(chan models.StorageURL)
+
+	go func() {
+		defer close(inputCh)
+
+		for _, data := range input {
+			select {
+			case <-doneCh:
+				return
+			case inputCh <- data:
+			}
+		}
+	}()
+
+	return inputCh
+}
+
+func UpdateStorage() {
+
+}

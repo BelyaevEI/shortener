@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	cookies "github.com/BelyaevEI/shortener/internal/cookie"
@@ -74,7 +76,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	// Проверяем существование ссылки
 	shortid, err = h.storage.GetShortenURL(ctx, string(longURL))
 	if err != nil {
-		h.logger.Log.Error(err, "Тут?")
+		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -127,6 +129,11 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	// Проверяем существование ссылки
 	originURL, err := h.storage.GetOriginalURL(ctx, id)
 	if err != nil || len(originURL) == 0 {
+		if err == errors.New("deleted url") {
+			w.WriteHeader(http.StatusGone)
+			return
+		}
+
 		w.WriteHeader(http.StatusBadRequest)
 		h.logger.Log.Infoln(err, originURL)
 		return
@@ -306,6 +313,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
+
 	var (
 		userID    uint32
 		userKeyID any
@@ -335,19 +343,6 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// if err != nil {
-	// 	h.logger.Log.Error(err)
-	// 	w.WriteHeader(http.StatusUnauthorized)
-	// 	return
-	// }
-
-	// userID, err = cookies.GetUserID(cookie.Value)
-	// if err != nil {
-	// 	h.logger.Log.Error(err)
-	// 	w.WriteHeader(http.StatusUnauthorized)
-	// 	return
-	// }
-
 	// находим все ссылки, которые сокращал данный пользователь
 	// если таковых нет, ответ короткий
 	allURLS, err := h.storage.GetUrlsUser(ctx, userID)
@@ -376,4 +371,102 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 
+}
+
+func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
+
+	var (
+		userID     uint32
+		userKeyID  any
+		deleteURLS []models.ShortURL
+	)
+
+	const keyID models.KeyID = "userID"
+
+	ctx := r.Context()
+
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	cookie, err := r.Cookie("Token")
+	if err != nil {
+		userKeyID = ctx.Value(keyID)
+		if ID, ok := userKeyID.(uint32); ok {
+			userID = ID
+		}
+	} else {
+		userID, err = cookies.GetUserID(cookie.Value)
+		if err != nil {
+			h.logger.Log.Error(err)
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+	}
+
+	// читаем ссылки отправленые для удаления
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.logger.Log.Error("Error read body request", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = json.Unmarshal(body, &deleteURLS)
+	if err != nil {
+		h.logger.Log.Error("Error deserialization", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// находим все ссылки, которые сокращал данный пользователь
+	allURLS, err := h.storage.GetUrlsUser(ctx, userID)
+	if err != nil || len(allURLS) == 0 {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	//помечаем для удаления ссылки
+	delURLS := utils.MarkDeletion(allURLS, utils.RemoveDuplicate(deleteURLS))
+	if len(delURLS) != 0 {
+		w.WriteHeader(http.StatusAccepted)
+
+		// сигнальный канал для завершения горутин
+		doneCh := make(chan struct{})
+
+		// закрываем его при завершении программы
+		defer close(doneCh)
+
+		// канал с данными
+		inputCh := utils.Generator(doneCh, delURLS)
+
+		// понадобится для ожидания всех горутин
+		var wg sync.WaitGroup
+
+		go func() {
+
+			for {
+				data, closed := <-inputCh
+				if !closed {
+					// инкрементируем счётчик горутин, которые нужно подождать
+					wg.Add(1)
+
+					// тут удаляем
+					h.storage.UpdateDeletedFlag(ctx, data)
+
+					// помечаем об выполнении горутины
+					wg.Done()
+				}
+			}
+		}()
+
+		go func() {
+			// ждём завершения всех горутин
+			wg.Wait()
+		}()
+
+		return
+	}
+
+	w.WriteHeader(http.StatusBadRequest)
 }
