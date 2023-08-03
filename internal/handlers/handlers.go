@@ -385,8 +385,23 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	// defer cancel()
+
+	// cookie, err := r.Cookie("Token")
+	// if err != nil {
+	// 	userKeyID = ctx.Value(keyID)
+	// 	if ID, ok := userKeyID.(uint32); ok {
+	// 		userID = ID
+	// 	}
+	// } else {
+	// 	userID, err = cookies.GetUserID(cookie.Value)
+	// 	if err != nil {
+	// 		h.logger.Log.Error(err)
+	// 		w.WriteHeader(http.StatusUnauthorized)
+	// 		return
+	// 	}
+	// }
 
 	cookie, err := r.Cookie("Token")
 	if err != nil {
@@ -395,12 +410,7 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 			userID = ID
 		}
 	} else {
-		userID, err = cookies.GetUserID(cookie.Value)
-		if err != nil {
-			h.logger.Log.Error(err)
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+		userID, _ = cookies.GetUserID(cookie.Value)
 	}
 
 	// читаем ссылки отправленые для удаления
