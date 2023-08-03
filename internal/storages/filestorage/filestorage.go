@@ -114,15 +114,5 @@ func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.
 }
 
 func (s *filestorage) UpdateDeletedFlag(ctx context.Context, data models.StorageURL) error {
-	storageURL := utils.ReadFile(s.FileStoragePath, s.log)
-
-	for _, v := range storageURL {
-		if v.UserID == data.UserID &&
-			v.OriginalURL == data.OriginalURL &&
-			v.ShortURL == data.ShortURL {
-			v.DeletedFlag = true
-		}
-
-	}
-
+	return nil
 }
