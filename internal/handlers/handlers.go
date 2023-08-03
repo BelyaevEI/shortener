@@ -375,58 +375,58 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	var (
-	// userID     uint32
-	// userKeyID any
-	// deleteURLS []models.ShortURL
+		userID     uint32
+		userKeyID  any
+		deleteURLS []string
 	)
 
-	// const keyID models.KeyID = "userID"
+	const keyID models.KeyID = "userID"
 
-	// ctx := r.Context()
+	ctx := r.Context()
 
-	// ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
-	// defer cancel()
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
 
-	// cookie, err := r.Cookie("Token")
-	// if err != nil {
-	// 	userKeyID = ctx.Value(keyID)
-	// 	if ID, ok := userKeyID.(uint32); ok {
-	// 		userID = ID
-	// 	}
-	// } else {
-	// 	userID, _ = cookies.GetUserID(cookie.Value)
-	// }
-	w.WriteHeader(http.StatusAccepted)
+	cookie, err := r.Cookie("Token")
+	if err != nil {
+		userKeyID = ctx.Value(keyID)
+		if ID, ok := userKeyID.(uint32); ok {
+			userID = ID
+		}
+	} else {
+		userID, _ = cookies.GetUserID(cookie.Value)
+	}
+
 	// читаем ссылки отправленые для удаления
-	// body, err := io.ReadAll(r.Body)
-	// if err != nil {
-	// 	h.logger.Log.Error("Error read body request", err)
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.logger.Log.Error("Error read body request", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	// err = json.Unmarshal(body, &deleteURLS)
-	// if err != nil {
-	// 	h.logger.Log.Error("Error deserialization", err)
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
+	err = json.Unmarshal(body, &deleteURLS)
+	if err != nil {
+		h.logger.Log.Error("Error deserialization", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	// // находим все ссылки, которые сокращал данный пользователь
-	// allURLS, err := h.storage.GetUrlsUser(ctx, userID)
-	// if err != nil || len(allURLS) == 0 {
-	// 	h.logger.Log.Error(err)
-	// 	w.WriteHeader(http.StatusNoContent)
-	// 	return
-	// }
+	// находим все ссылки, которые сокращал данный пользователь
+	allURLS, err := h.storage.GetUrlsUser(ctx, userID)
+	if err != nil || len(allURLS) == 0 {
+		h.logger.Log.Error(err)
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 
-	// //помечаем для удаления ссылки
-	// delURLS := utils.MarkDeletion(allURLS, utils.RemoveDuplicate(deleteURLS))
-	// if len(delURLS) != 0 {
-	// 	for _, data := range delURLS {
-	// 		go h.storage.UpdateDeletedFlag(ctx, data)
-	// 	}
+	//помечаем для удаления ссылки
+	delURLS := utils.MarkDeletion(allURLS, utils.RemoveDuplicate(deleteURLS))
+	if len(delURLS) != 0 {
+		for _, data := range delURLS {
+			go h.storage.UpdateDeletedFlag(ctx, data)
+		}
 
-	// 	w.WriteHeader(http.StatusAccepted)
-	// }
+		w.WriteHeader(http.StatusAccepted)
+	}
 }

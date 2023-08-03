@@ -138,17 +138,17 @@ func TryFoundUserURLS(userID uint32, s []models.StorageURL) ([]models.StorageURL
 	return store, nil
 }
 
-func RemoveDuplicate(deleteURLS []models.ShortURL) []models.ShortURL {
+func RemoveDuplicate(deleteURLS []string) []models.ShortURL {
 	var result []models.ShortURL
 
 	dd := make(map[string]struct{})
 
 	for _, v := range deleteURLS {
-		if _, ok := dd[v.ShortURL]; !ok {
-			dd[v.ShortURL] = struct{}{}
+		if _, ok := dd[v]; !ok {
+			dd[v] = struct{}{}
 
 			var res models.ShortURL
-			res.ShortURL = v.ShortURL
+			res.ShortURL = v
 			result = append(result, res)
 		}
 	}
