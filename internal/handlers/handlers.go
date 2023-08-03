@@ -439,42 +439,42 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 	delURLS := utils.MarkDeletion(allURLS, utils.RemoveDuplicate(deleteURLS))
 	if len(delURLS) != 0 {
 		w.WriteHeader(http.StatusAccepted)
-		return
-		// // сигнальный канал для завершения горутин
-		// doneCh := make(chan struct{})
 
-		// // закрываем его при завершении программы
-		// defer close(doneCh)
+		// сигнальный канал для завершения горутин
+		doneCh := make(chan struct{})
 
-		// // канал с данными
-		// inputCh := utils.Generator(doneCh, delURLS)
+		// закрываем его при завершении программы
+		defer close(doneCh)
 
-		// // понадобится для ожидания всех горутин
-		// // var wg sync.WaitGroup
+		// канал с данными
+		inputCh := utils.Generator(doneCh, delURLS)
+
+		// понадобится для ожидания всех горутин
+		// var wg sync.WaitGroup
+
+		go func() {
+
+			for {
+				data, closed := <-inputCh
+				if !closed {
+					// инкрементируем счётчик горутин, которые нужно подождать
+					// wg.Add(1)
+
+					// тут удаляем
+					h.storage.UpdateDeletedFlag(ctx, data)
+
+					// помечаем об выполнении горутины
+					// wg.Done()
+				}
+			}
+		}()
 
 		// go func() {
-
-		// 	for {
-		// 		data, closed := <-inputCh
-		// 		if !closed {
-		// 			// инкрементируем счётчик горутин, которые нужно подождать
-		// 			// wg.Add(1)
-
-		// 			// тут удаляем
-		// 			h.storage.UpdateDeletedFlag(ctx, data)
-
-		// 			// помечаем об выполнении горутины
-		// 			// wg.Done()
-		// 		}
-		// 	}
+		// ждём завершения всех горутин
+		// wg.Wait()
 		// }()
 
-		// // go func() {
-		// // ждём завершения всех горутин
-		// // wg.Wait()
-		// // }()
-
-		// return
+		return
 	}
 
 	w.WriteHeader(http.StatusBadRequest)
