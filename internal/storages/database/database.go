@@ -72,9 +72,11 @@ func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, e
 		}
 		return "", nil
 	}
+
 	if deleted {
 		return foundURL, errors.New("deleted url")
 	}
+
 	return foundURL, nil
 }
 

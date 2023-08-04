@@ -129,7 +129,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	// Проверяем существование ссылки
 	originURL, err := h.storage.GetOriginalURL(ctx, id)
 	if err != nil || len(originURL) == 0 {
-		if err == errors.New("deleted url") {
+		if errors.Is(err, errors.New("deleted url")) {
 			w.WriteHeader(http.StatusGone)
 			return
 		}
