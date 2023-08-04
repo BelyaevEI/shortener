@@ -420,22 +420,25 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// чтобы дождаться всех горутин
-	// var wg sync.WaitGroup
-
 	//помечаем для удаления ссылки
 	delURLS := utils.MarkDeletion(allURLS, utils.RemoveDuplicate(deleteURLS))
 	if len(delURLS) != 0 {
-		for _, data := range delURLS {
-			// wg.Add(1)
-			go h.storage.UpdateDeletedFlag(ctx, data)
 
-			// откладываем уменьшение счетчика в WaitGroup, когда завершится горутина
-			// wg.Done()
-		}
-
-		// ждём завершения всех горутин
-		// wg.Wait()
+		go DeleteURL(ctx, h, delURLS)
 		w.WriteHeader(http.StatusAccepted)
+	}
+}
+
+func DeleteURL(ctx context.Context, h *Handlers, delURLS []models.StorageURL) {
+
+	// чтобы дождаться всех горутин
+	// var wg sync.WaitGroup
+
+	for _, data := range delURLS {
+		// wg.Add(1)
+		h.storage.UpdateDeletedFlag(ctx, data)
+
+		// откладываем уменьшение счетчика в WaitGroup, когда завершится горутина
+		// wg.Done()
 	}
 }
