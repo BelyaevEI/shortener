@@ -38,6 +38,5 @@ type (
 		ShortURL      string `json:"short_url,omitempty"`
 		DeletedFlag   bool   `json:"deleted"`
 	}
-
 	KeyID string
 )

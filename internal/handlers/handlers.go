@@ -314,7 +314,6 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
-
 	var (
 		userID    uint32
 		userKeyID any

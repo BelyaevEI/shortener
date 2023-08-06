@@ -169,7 +169,6 @@ func MarkDeletion(userURLS []models.StorageURL, deleteURLS []string) []models.De
 	}
 	return markDel
 }
-
 func Generator(doneCh chan struct{}, input []models.StorageURL) chan models.StorageURL {
 	inputCh := make(chan models.StorageURL)
 

@@ -147,4 +147,5 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID 
 
 	_, err := d.db.ExecContext(ctx, query, args)
 	return err
+
 }

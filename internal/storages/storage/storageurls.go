@@ -46,4 +46,5 @@ func (s *Storage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Stor
 
 func (s *Storage) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) error {
 	return s.storage.UpdateDeletedFlag(ctx, data, userID)
+
 }
