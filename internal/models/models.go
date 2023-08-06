@@ -18,8 +18,9 @@ type (
 		DeletedFlag bool   `json:"deleted"`
 	}
 
-	ShortURL struct {
-		ShortURL string `json:"short_url"`
+	DeleteURL struct {
+		ShortURL string
+		UserID   uint32
 	}
 
 	Storage interface {
@@ -28,7 +29,7 @@ type (
 		GetShortURL(ctx context.Context, longURL string) (string, error)
 		Ping(ctx context.Context) error
 		GetUrlsUser(ctx context.Context, userID uint32) ([]StorageURL, error)
-		UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) error
+		UpdateDeletedFlag(ctx context.Context, data []DeleteURL) error
 	}
 
 	Batch struct {

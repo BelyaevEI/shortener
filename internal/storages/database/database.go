@@ -125,12 +125,12 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 
 }
 
-func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) error {
+func (d *database) UpdateDeletedFlag(ctx context.Context, data []models.DeleteURL) error {
 	// соберём данные для создания запроса с групповой вставкой
 	var values []string
 	var args []any
 
-	args = append(args, userID)
+	args = append(args, data[0].UserID)
 
 	for i, line := range data {
 		count := i + 2

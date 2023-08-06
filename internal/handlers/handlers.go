@@ -20,6 +20,7 @@ type Handlers struct {
 	shortURL string
 	storage  *storage.Storage
 	logger   *logger.Logger
+	URLChan  chan models.DeleteURL
 }
 
 func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers {
@@ -27,6 +28,7 @@ func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers
 		shortURL: shortURL,
 		storage:  storage,
 		logger:   log,
+		URLChan:  make(chan models.DeleteURL, 1024),
 	}
 }
 
@@ -425,9 +427,34 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 	// delURLS := utils.MarkDeletion(allURLS, deleteURLS)
 	if len(deleteURLS) != 0 {
 
-		go func([]string) {
-			h.storage.UpdateDeletedFlag(ctx, deleteURLS, userID)
-		}(deleteURLS)
+		for _, v := range deleteURLS {
+			url := models.DeleteURL{UserID: userID,
+				ShortURL: v}
+			h.URLChan <- url
+		}
 		w.WriteHeader(http.StatusAccepted)
+	}
+}
+
+func (h *Handlers) DeleteURLS() {
+
+	ticker := time.NewTicker(10 * time.Second)
+
+	var urls []models.DeleteURL
+
+	for {
+		select {
+		case url := <-h.URLChan:
+			urls = append(urls, url)
+		case <-ticker.C:
+			if len(urls) == 0 {
+				continue
+			}
+			err := h.storage.UpdateDeletedFlag(context.TODO(), urls)
+			if err != nil {
+				continue
+			}
+			urls = nil
+		}
 	}
 }
