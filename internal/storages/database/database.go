@@ -140,9 +140,9 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID 
 
 	// составляем строку запроса
 	if len(data) < 2 {
-		query = `UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2;`
+		query = "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2"
 	} else {
-		query = `UPDATE storage_urls SET deleted = true WHERE userID = $1 AND (` + strings.Join(values, " OR ") + `);`
+		query = "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND (" + strings.Join(values, " OR ") + ")"
 	}
 
 	_, err := d.db.ExecContext(ctx, query, args)
