@@ -29,7 +29,7 @@ type (
 		GetShortURL(ctx context.Context, longURL string) (string, error)
 		Ping(ctx context.Context) error
 		GetUrlsUser(ctx context.Context, userID uint32) ([]StorageURL, error)
-		UpdateDeletedFlag(ctx context.Context, data []DeleteURL) error
+		UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) error
 	}
 
 	Batch struct {

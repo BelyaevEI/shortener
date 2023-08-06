@@ -414,47 +414,9 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// // находим все ссылки, которые сокращал данный пользователь
-	// allURLS, err := h.storage.GetUrlsUser(ctx, userID)
-	// if err != nil || len(allURLS) == 0 {
-	// 	h.logger.Log.Error(err)
-	// 	w.WriteHeader(http.StatusNoContent)
-	// 	return
-	// }
-
-	//помечаем для удаления ссылки
-	// delURLS := utils.MarkDeletion(allURLS, deleteURLS)
+	//посылаем в канал
 	if len(deleteURLS) != 0 {
-
-		for _, v := range deleteURLS {
-			url := models.DeleteURL{UserID: userID,
-				ShortURL: v}
-			h.URLChan <- url
-		}
+		go h.storage.UpdateDeletedFlag(ctx, deleteURLS, userID)
 		w.WriteHeader(http.StatusAccepted)
-	}
-}
-
-func (h *Handlers) DeleteURLS() {
-
-	ticker := time.NewTicker(10 * time.Second)
-
-	var urls []models.DeleteURL
-
-	for {
-		select {
-		case url := <-h.URLChan:
-			urls = append(urls, url)
-		case <-ticker.C:
-			if len(urls) == 0 {
-				continue
-			}
-			err := h.storage.UpdateDeletedFlag(context.TODO(), urls)
-			if err != nil {
-				h.logger.Log.Error(err)
-				continue
-			}
-			urls = nil
-		}
 	}
 }

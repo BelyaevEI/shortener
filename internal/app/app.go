@@ -14,18 +14,12 @@ import (
 type App struct {
 	flagRunAddr string
 	chi         *chi.Mux
-	cfg         config.Parameters
-	Handlers    handlers.Handlers
 }
 
 func RunServer() error {
 
 	//Инициализируем сервис
 	app := NewApp()
-
-	//Постоянное удаление ссылок в фоне
-	go app.Handlers.DeleteURLS()
-
 	return http.ListenAndServe(app.flagRunAddr, app.chi)
 }
 
@@ -49,8 +43,6 @@ func NewApp() *App {
 	return &App{
 		flagRunAddr: cfg.FlagRunAddr,
 		chi:         r,
-		cfg:         cfg,
-		Handlers:    h,
 	}
 
 }
