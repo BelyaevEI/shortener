@@ -132,7 +132,7 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID 
 	args = append(args, userID)
 
 	for i, line := range data {
-		count := i + 3
+		count := i + 2
 		params := fmt.Sprintf("short = $%d", count)
 		values = append(values, params)
 		args = append(args, line)
