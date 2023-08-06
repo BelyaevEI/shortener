@@ -24,7 +24,7 @@ func New(DBpath string, log *logger.Logger) *database {
 		log.Log.Error(err)
 	}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls(userID bigint NOT NULL, short text not null, long text not null, deleted BOOLEAN NOT NULL)")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls(userID bigint NOT NULL, short text not null, long text not null, deleted BOOLEAN NOT NULL);")
 	if err != nil {
 		log.Log.Error("Error create table", err)
 		return nil
