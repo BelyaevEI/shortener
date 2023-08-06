@@ -48,5 +48,5 @@ func (c *cache) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Storag
 	return nil, nil
 }
 
-func (c *cache) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) {
+func (c *cache) UpdateDeletedFlag(ctx context.Context, data models.DeleteURL) {
 }

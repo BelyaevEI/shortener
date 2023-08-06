@@ -169,18 +169,17 @@ func MarkDeletion(userURLS []models.StorageURL, deleteURLS []string) []models.De
 	}
 	return markDel
 }
-func Generator(doneCh chan struct{}, input []models.StorageURL) chan models.StorageURL {
-	inputCh := make(chan models.StorageURL)
+func Generator(input []string, userID uint32) chan models.DeleteURL {
+	inputCh := make(chan models.DeleteURL, 10)
 
 	go func() {
 		defer close(inputCh)
 
 		for _, data := range input {
-			select {
-			case <-doneCh:
-				return
-			case inputCh <- data:
+			deleteURL := models.DeleteURL{ShortURL: data,
+				UserID: userID,
 			}
+			inputCh <- deleteURL
 		}
 	}()
 

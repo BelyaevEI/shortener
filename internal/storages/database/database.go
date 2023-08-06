@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/models"
@@ -130,31 +128,9 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 
 }
 
-func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) {
-	// соберём данные для создания запроса с групповой вставкой
-	var (
-		values []string
-		args   []any
-		query  string
-	)
+func (d *database) UpdateDeletedFlag(ctx context.Context, data models.DeleteURL) {
 
-	args = append(args, userID)
-
-	for i, line := range data {
-		count := i + 2
-		params := fmt.Sprintf("short = $%d", count)
-		values = append(values, params)
-		args = append(args, line)
-	}
-
-	// составляем строку запроса
-	if len(data) < 2 {
-		query = "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2"
-	} else {
-		query = "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND (" + strings.Join(values, " OR ") + ")"
-	}
-
-	sql, err := d.db.ExecContext(ctx, query, args)
+	sql, err := d.db.ExecContext(ctx, "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2", data.UserID, data.ShortURL)
 	if err != nil {
 		d.log.Log.Error(err)
 		return
