@@ -28,8 +28,8 @@ func (s *Storage) GetOriginalURL(ctx context.Context, inputURL string) (string, 
 	return s.storage.GetOriginURL(ctx, inputURL)
 }
 
-func (s *Storage) GetShortenURL(ctx context.Context, inputURL string) (string, error) {
-	return s.storage.GetShortURL(ctx, inputURL)
+func (s *Storage) GetShortenURL(ctx context.Context, inputURL string, log *logger.Logger) (string, error) {
+	return s.storage.GetShortURL(ctx, inputURL, log)
 }
 
 func (s *Storage) SaveURL(ctx context.Context, url1, url2 string, userID uint32) error {
@@ -44,7 +44,7 @@ func (s *Storage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Stor
 	return s.storage.GetUrlsUser(ctx, userID)
 }
 
-func (s *Storage) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) error {
-	return s.storage.UpdateDeletedFlag(ctx, data, userID)
+func (s *Storage) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32, log *logger.Logger) error {
+	return s.storage.UpdateDeletedFlag(ctx, data, userID, log)
 
 }

@@ -74,7 +74,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortenURL(ctx, string(longURL))
+	shortid, err = h.storage.GetShortenURL(ctx, string(longURL), h.logger)
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -183,7 +183,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	longURL := req.URL
 
 	// Проверяем существование ссылки
-	shortid, err = h.storage.GetShortenURL(ctx, longURL)
+	shortid, err = h.storage.GetShortenURL(ctx, longURL, h.logger)
 	if err != nil {
 		h.logger.Log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -275,7 +275,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range batchinput {
 
-		shortid, err = h.storage.GetShortenURL(ctx, v.OriginalURL)
+		shortid, err = h.storage.GetShortenURL(ctx, v.OriginalURL, h.logger)
 		if err != nil {
 			h.logger.Log.Error(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -415,7 +415,7 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	//посылаем в канал
 	if len(deleteURLS) != 0 {
-		h.storage.UpdateDeletedFlag(ctx, deleteURLS, userID)
+		go h.storage.UpdateDeletedFlag(ctx, deleteURLS, userID, h.logger)
 		w.WriteHeader(http.StatusAccepted)
 	}
 }

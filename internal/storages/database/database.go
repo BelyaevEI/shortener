@@ -42,12 +42,14 @@ func (d *database) Save(ctx context.Context, url1, url2 string, userID uint32) e
 	return err
 }
 
-func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, error) {
+func (d *database) GetShortURL(ctx context.Context, inputURL string, log *logger.Logger) (string, error) {
 
 	var (
 		foundURL string
 		err      error
 	)
+
+	log.Log.Info(inputURL)
 
 	row := d.db.QueryRowContext(ctx, "SELECT short FROM storage_urls where long=$1", inputURL)
 	if err = row.Scan(&foundURL); err != nil {
@@ -56,6 +58,9 @@ func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, er
 		}
 		return "", nil
 	}
+
+	log.Log.Info(foundURL)
+
 	return foundURL, nil
 }
 
@@ -121,7 +126,7 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 
 }
 
-func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) error {
+func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32, log *logger.Logger) error {
 	// соберём данные для создания запроса с групповой вставкой
 	var (
 		values []string
@@ -145,7 +150,8 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID 
 		query = "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND (" + strings.Join(values, " OR ") + ")"
 	}
 	fmt.Println(query, args)
-	_, err := d.db.ExecContext(ctx, query, args)
+	sql, err := d.db.ExecContext(ctx, query, args)
+	log.Log.Infoln(sql)
 	return err
 
 }
