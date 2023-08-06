@@ -421,7 +421,7 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//помечаем для удаления ссылки
-	delURLS := utils.MarkDeletion(allURLS, utils.RemoveDuplicate(deleteURLS))
+	delURLS := utils.MarkDeletion(allURLS, deleteURLS)
 	if len(delURLS) != 0 {
 
 		go func([]models.ShortURL) {

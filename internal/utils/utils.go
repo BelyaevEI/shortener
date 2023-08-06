@@ -155,13 +155,13 @@ func RemoveDuplicate(deleteURLS []string) []models.ShortURL {
 	return result
 }
 
-func MarkDeletion(userURLS []models.StorageURL, deleteURLS []models.ShortURL) []models.ShortURL {
+func MarkDeletion(userURLS []models.StorageURL, deleteURLS []string) []models.ShortURL {
 	var del models.ShortURL
 	markDel := make([]models.ShortURL, 0)
 
 	for _, varDel := range deleteURLS {
 		for _, v := range userURLS {
-			if !v.DeletedFlag && v.ShortURL == varDel.ShortURL {
+			if !v.DeletedFlag && v.ShortURL == varDel {
 				del.ShortURL = v.ShortURL
 				markDel = append(markDel, del)
 			}
