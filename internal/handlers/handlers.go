@@ -415,7 +415,7 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	//посылаем в канал
 	if len(deleteURLS) != 0 {
-		go h.storage.UpdateDeletedFlag(ctx, deleteURLS, userID)
+		h.storage.UpdateDeletedFlag(ctx, deleteURLS, userID)
 		w.WriteHeader(http.StatusAccepted)
 	}
 }
