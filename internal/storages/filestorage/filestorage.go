@@ -73,7 +73,7 @@ func (s *filestorage) GetShortURL(ctx context.Context, inputURL string) (string,
 	}
 }
 
-func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
+func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -86,9 +86,9 @@ func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string
 
 	select {
 	case <-ctx.Done():
-		return "", ctx.Err()
+		return "", false, ctx.Err()
 	default:
-		return foundurl, nil
+		return foundurl, false, nil
 	}
 
 }

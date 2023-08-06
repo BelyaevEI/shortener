@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -126,15 +125,15 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	originURL, err := h.storage.GetOriginalURL(ctx, id)
+	originURL, flag, err := h.storage.GetOriginalURL(ctx, id)
 	if err != nil || len(originURL) == 0 {
-		if errors.Is(err, errors.New("deleted url")) {
-			w.WriteHeader(http.StatusGone)
-			return
-		}
-
 		w.WriteHeader(http.StatusBadRequest)
 		h.logger.Log.Infoln(err, originURL)
+		return
+	}
+
+	if flag {
+		w.WriteHeader(http.StatusGone)
 		return
 	}
 

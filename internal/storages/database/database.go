@@ -59,7 +59,7 @@ func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, er
 	return foundURL, nil
 }
 
-func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
+func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 
 	var (
 		foundURL string
@@ -70,16 +70,16 @@ func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, e
 	row := d.db.QueryRowContext(ctx, "select long, deleted from storage_urls where short=$1", inputURL)
 	if err = row.Scan(&foundURL, &deleted); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			return "", err
+			return "", false, err
 		}
-		return "", nil
+		return "", false, nil
 	}
 
 	if deleted {
-		return foundURL, errors.New("deleted url")
+		return foundURL, true, nil
 	}
 
-	return foundURL, nil
+	return foundURL, false, nil
 }
 
 func (d *database) Ping(ctx context.Context) error {

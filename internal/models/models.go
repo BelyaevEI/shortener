@@ -24,7 +24,7 @@ type (
 
 	Storage interface {
 		Save(ctx context.Context, url1, url2 string, userID uint32) error
-		GetOriginURL(ctx context.Context, shortURL string) (string, error)
+		GetOriginURL(ctx context.Context, shortURL string) (string, bool, error)
 		GetShortURL(ctx context.Context, longURL string) (string, error)
 		Ping(ctx context.Context) error
 		GetUrlsUser(ctx context.Context, userID uint32) ([]StorageURL, error)

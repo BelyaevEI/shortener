@@ -24,7 +24,7 @@ func Init(filepath, dbpath string, log *logger.Logger) *Storage {
 	return &Storage{storage: filestorage.New(filepath, log)}
 }
 
-func (s *Storage) GetOriginalURL(ctx context.Context, inputURL string) (string, error) {
+func (s *Storage) GetOriginalURL(ctx context.Context, inputURL string) (string, bool, error) {
 	return s.storage.GetOriginURL(ctx, inputURL)
 }
 
