@@ -73,7 +73,7 @@ func (s *filestorage) GetShortURL(ctx context.Context, inputURL string, log *log
 	}
 }
 
-func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
+func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string, log *logger.Logger) (string, bool, error) {
 
 	var (
 		storageURL []models.StorageURL

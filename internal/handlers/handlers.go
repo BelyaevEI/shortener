@@ -127,7 +127,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем существование ссылки
-	originURL, flag, err := h.storage.GetOriginalURL(ctx, id)
+	originURL, flag, err := h.storage.GetOriginalURL(ctx, id, h.logger)
 	if err != nil || len(originURL) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		h.logger.Log.Infoln(err, originURL)

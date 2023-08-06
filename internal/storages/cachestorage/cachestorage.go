@@ -27,7 +27,7 @@ func (c *cache) GetShortURL(ctx context.Context, inputURL string, log *logger.Lo
 
 }
 
-func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
+func (c *cache) GetOriginURL(ctx context.Context, inputURL string, log *logger.Logger) (string, bool, error) {
 	foundurl := c.storageOriginURL[inputURL]
 	return foundurl, false, nil
 

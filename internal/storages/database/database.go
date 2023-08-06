@@ -64,13 +64,15 @@ func (d *database) GetShortURL(ctx context.Context, inputURL string, log *logger
 	return foundURL, nil
 }
 
-func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
+func (d *database) GetOriginURL(ctx context.Context, inputURL string, log *logger.Logger) (string, bool, error) {
 
 	var (
 		foundURL string
 		err      error
 		deleted  bool
 	)
+
+	log.Log.Info(inputURL)
 
 	row := d.db.QueryRowContext(ctx, "SELECT long, deleted FROM storage_urls where short=$1", inputURL)
 	if err = row.Scan(&foundURL, &deleted); err != nil {
@@ -79,6 +81,8 @@ func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, b
 		}
 		return "", false, nil
 	}
+
+	log.Log.Info(foundURL)
 
 	return foundURL, deleted, nil
 }
@@ -151,7 +155,7 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID 
 	}
 	fmt.Println(query, args)
 	sql, err := d.db.ExecContext(ctx, query, args)
-	log.Log.Infoln(sql)
+	log.Log.Infoln(sql.RowsAffected())
 	return err
 
 }
