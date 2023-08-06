@@ -143,7 +143,7 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []models.DeleteUR
 	query := `UPDATE storage_urls
 				set deleted = true
 				WHERE userID =$1
-				AND (` + strings.Join(values, "OR") + `)`
+				AND (` + strings.Join(values, " OR ") + `)`
 
 	_, err := d.db.ExecContext(ctx, query, args)
 	return err
