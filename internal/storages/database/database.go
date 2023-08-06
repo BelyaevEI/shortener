@@ -24,7 +24,7 @@ func New(DBpath string, log *logger.Logger) *database {
 		log.Log.Error(err)
 	}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls(userID bigint NOT NULL, short text not null, long text not null, deleted BOOLEAN NOT NULL);")
+	_, err = db.Exec("create table IF NOT EXISTS storage_urls(userID bigint NOT NULL, short text not null, long text not null, deleted boolean default false)")
 	if err != nil {
 		log.Log.Error("Error create table", err)
 		return nil
@@ -38,7 +38,7 @@ func New(DBpath string, log *logger.Logger) *database {
 }
 
 func (d *database) Save(ctx context.Context, url1, url2 string, userID uint32) error {
-	_, err := d.db.ExecContext(ctx, "INSERT INTO urls(userID, short, long) values ($1, $2, $3)", userID, url1, url2)
+	_, err := d.db.ExecContext(ctx, "INSERT INTO storage_urls(userID, short, long) values ($1, $2, $3)", userID, url1, url2)
 	return err
 }
 
@@ -49,7 +49,7 @@ func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, er
 		err      error
 	)
 
-	row := d.db.QueryRowContext(ctx, "SELECT short FROM urls where long=$1", inputURL)
+	row := d.db.QueryRowContext(ctx, "SELECT short FROM storage_urls where long=$1", inputURL)
 	if err = row.Scan(&foundURL); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", err
@@ -67,7 +67,7 @@ func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, b
 		deleted  bool
 	)
 
-	row := d.db.QueryRowContext(ctx, "SELECT long, deleted FROM urls where short=$1", inputURL)
+	row := d.db.QueryRowContext(ctx, "SELECT long, deleted FROM storage_urls where short=$1", inputURL)
 	if err = row.Scan(&foundURL, &deleted); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", false, err
@@ -94,7 +94,7 @@ func (d *database) Ping(ctx context.Context) error {
 func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
 	storageURLS := make([]models.StorageURL, 0)
 
-	rows, err := d.db.QueryContext(ctx, "SELECT userID, short, long from urls WHERE userID=$1", userID)
+	rows, err := d.db.QueryContext(ctx, "SELECT userID, short, long from storage_urls WHERE userID=$1", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -140,9 +140,9 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID 
 
 	// составляем строку запроса
 	if len(data) < 2 {
-		query = `UPDATE urls SET deleted = true WHERE userID = $1 AND short = $2;`
+		query = `UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2;`
 	} else {
-		query = `UPDATE urls SET deleted = true WHERE userID = $1 AND (` + strings.Join(values, " OR ") + `);`
+		query = `UPDATE storage_urls SET deleted = true WHERE userID = $1 AND (` + strings.Join(values, " OR ") + `);`
 	}
 
 	_, err := d.db.ExecContext(ctx, query, args)
