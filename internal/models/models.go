@@ -28,7 +28,7 @@ type (
 		GetShortURL(ctx context.Context, longURL string) (string, error)
 		Ping(ctx context.Context) error
 		GetUrlsUser(ctx context.Context, userID uint32) ([]StorageURL, error)
-		UpdateDeletedFlag(ctx context.Context, data StorageURL) error
+		UpdateDeletedFlag(ctx context.Context, data []ShortURL, userID uint32) error
 	}
 
 	Batch struct {

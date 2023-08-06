@@ -113,6 +113,6 @@ func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.
 	return userURLS, nil
 }
 
-func (s *filestorage) UpdateDeletedFlag(ctx context.Context, data models.StorageURL) error {
+func (s *filestorage) UpdateDeletedFlag(ctx context.Context, data []models.ShortURL, userID uint32) error {
 	return nil
 }
