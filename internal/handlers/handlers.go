@@ -412,13 +412,13 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// находим все ссылки, которые сокращал данный пользователь
-	allURLS, err := h.storage.GetUrlsUser(ctx, userID)
-	if err != nil || len(allURLS) == 0 {
-		h.logger.Log.Error(err)
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
+	// // находим все ссылки, которые сокращал данный пользователь
+	// allURLS, err := h.storage.GetUrlsUser(ctx, userID)
+	// if err != nil || len(allURLS) == 0 {
+	// 	h.logger.Log.Error(err)
+	// 	w.WriteHeader(http.StatusNoContent)
+	// 	return
+	// }
 
 	//помечаем для удаления ссылки
 	// delURLS := utils.MarkDeletion(allURLS, deleteURLS)
