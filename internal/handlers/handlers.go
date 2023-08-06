@@ -134,6 +134,7 @@ func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	h.logger.Log.Infoln(err, originURL, flag)
 	if flag {
 		w.WriteHeader(http.StatusGone)
 		return
