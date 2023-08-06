@@ -54,7 +54,7 @@ func (s *filestorage) Save(ctx context.Context, url1, url2 string, userID uint32
 	}
 }
 
-func (s *filestorage) GetShortURL(ctx context.Context, inputURL string, log *logger.Logger) (string, error) {
+func (s *filestorage) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -73,7 +73,7 @@ func (s *filestorage) GetShortURL(ctx context.Context, inputURL string, log *log
 	}
 }
 
-func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string, log *logger.Logger) (string, bool, error) {
+func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -113,7 +113,5 @@ func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.
 	return userURLS, nil
 }
 
-func (s *filestorage) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32, log *logger.Logger) error {
-	return nil
-
+func (s *filestorage) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) {
 }

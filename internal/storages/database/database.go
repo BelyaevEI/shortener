@@ -42,14 +42,14 @@ func (d *database) Save(ctx context.Context, url1, url2 string, userID uint32) e
 	return err
 }
 
-func (d *database) GetShortURL(ctx context.Context, inputURL string, log *logger.Logger) (string, error) {
+func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
 		foundURL string
 		err      error
 	)
 
-	log.Log.Info(inputURL)
+	d.log.Log.Info(inputURL)
 
 	row := d.db.QueryRowContext(ctx, "SELECT short FROM storage_urls where long=$1", inputURL)
 	if err = row.Scan(&foundURL); err != nil {
@@ -59,12 +59,12 @@ func (d *database) GetShortURL(ctx context.Context, inputURL string, log *logger
 		return "", nil
 	}
 
-	log.Log.Info(foundURL)
+	d.log.Log.Info(foundURL)
 
 	return foundURL, nil
 }
 
-func (d *database) GetOriginURL(ctx context.Context, inputURL string, log *logger.Logger) (string, bool, error) {
+func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 
 	var (
 		foundURL string
@@ -72,7 +72,7 @@ func (d *database) GetOriginURL(ctx context.Context, inputURL string, log *logge
 		deleted  bool
 	)
 
-	log.Log.Info(inputURL)
+	d.log.Log.Info(inputURL)
 
 	row := d.db.QueryRowContext(ctx, "SELECT long, deleted FROM storage_urls where short=$1", inputURL)
 	if err = row.Scan(&foundURL, &deleted); err != nil {
@@ -82,7 +82,7 @@ func (d *database) GetOriginURL(ctx context.Context, inputURL string, log *logge
 		return "", false, nil
 	}
 
-	log.Log.Info(foundURL)
+	d.log.Log.Info(foundURL)
 
 	return foundURL, deleted, nil
 }
@@ -130,7 +130,7 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 
 }
 
-func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32, log *logger.Logger) error {
+func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) {
 	// соберём данные для создания запроса с групповой вставкой
 	var (
 		values []string
@@ -153,9 +153,12 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID 
 	} else {
 		query = "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND (" + strings.Join(values, " OR ") + ")"
 	}
-	fmt.Println(query, args)
-	sql, err := d.db.ExecContext(ctx, query, args)
-	log.Log.Infoln(sql.RowsAffected())
-	return err
 
+	sql, err := d.db.ExecContext(ctx, query, args)
+	if err != nil {
+		d.log.Log.Error(err)
+		return
+	}
+
+	d.log.Log.Infoln(sql.RowsAffected())
 }

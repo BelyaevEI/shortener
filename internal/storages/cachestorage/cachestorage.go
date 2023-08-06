@@ -21,13 +21,13 @@ func New(log *logger.Logger) *cache {
 	}
 }
 
-func (c *cache) GetShortURL(ctx context.Context, inputURL string, log *logger.Logger) (string, error) {
+func (c *cache) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageShortURL[inputURL]
 	return foundurl, nil
 
 }
 
-func (c *cache) GetOriginURL(ctx context.Context, inputURL string, log *logger.Logger) (string, bool, error) {
+func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 	foundurl := c.storageOriginURL[inputURL]
 	return foundurl, false, nil
 
@@ -48,7 +48,5 @@ func (c *cache) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Storag
 	return nil, nil
 }
 
-func (c *cache) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32, log *logger.Logger) error {
-	return nil
-
+func (c *cache) UpdateDeletedFlag(ctx context.Context, data []string, userID uint32) {
 }
