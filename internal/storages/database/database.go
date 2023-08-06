@@ -144,7 +144,7 @@ func (d *database) UpdateDeletedFlag(ctx context.Context, data []string, userID 
 	} else {
 		query = "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND (" + strings.Join(values, " OR ") + ")"
 	}
-
+	fmt.Println(query, args)
 	_, err := d.db.ExecContext(ctx, query, args)
 	return err
 
