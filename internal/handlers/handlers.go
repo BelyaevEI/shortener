@@ -421,12 +421,12 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//помечаем для удаления ссылки
-	delURLS := utils.MarkDeletion(allURLS, deleteURLS)
-	if len(delURLS) != 0 {
+	// delURLS := utils.MarkDeletion(allURLS, deleteURLS)
+	if len(deleteURLS) != 0 {
 
-		go func([]models.ShortURL) {
-			h.storage.UpdateDeletedFlag(ctx, delURLS, userID)
-		}(delURLS)
+		go func([]string) {
+			h.storage.UpdateDeletedFlag(ctx, deleteURLS, userID)
+		}(deleteURLS)
 		w.WriteHeader(http.StatusAccepted)
 	}
 }
