@@ -397,6 +397,8 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 		userID, _ = cookies.GetUserID(cookie.Value)
 	}
 
+	h.logger.Log.Info(userID)
+
 	// читаем ссылки отправленые для удаления
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
