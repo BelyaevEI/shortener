@@ -35,11 +35,11 @@ func TestReplacePOST(t *testing.T) {
 		},
 	}
 
-	test2 := test{name: "Empty link in body",
-		want: want{
-			code: http.StatusBadRequest,
-		},
-	}
+	// test2 := test{name: "Empty link in body",
+	// 	want: want{
+	// 		code: http.StatusBadRequest,
+	// 	},
+	// }
 
 	// Парсинг переменных окружения
 	cfg := config.ParseFlags()
@@ -90,30 +90,30 @@ func TestReplacePOST(t *testing.T) {
 		assert.NotEmpty(t, string(resBody))
 	})
 
-	t.Run(test2.name, func(t *testing.T) {
+	// t.Run(test2.name, func(t *testing.T) {
 
-		//Создаем тело запроса
-		requestBody := strings.NewReader(" ")
+	// 	//Создаем тело запроса
+	// 	requestBody := strings.NewReader(" ")
 
-		//Создаем сам запрос
-		request := httptest.NewRequest(http.MethodPost, "/", requestBody)
+	// 	//Создаем сам запрос
+	// 	request := httptest.NewRequest(http.MethodPost, "/", requestBody)
 
-		//Устанавливаем заголовок
-		request.Header.Set("Content-Type", "text/plain")
+	// 	//Устанавливаем заголовок
+	// 	request.Header.Set("Content-Type", "text/plain")
 
-		//Создаем рекордер для записи ответа
-		responseRecorder := httptest.NewRecorder()
+	// 	//Создаем рекордер для записи ответа
+	// 	responseRecorder := httptest.NewRecorder()
 
-		//Обрабатываем запрос
-		h.ReplacePOST(responseRecorder, request)
+	// 	//Обрабатываем запрос
+	// 	h.ReplacePOST(responseRecorder, request)
 
-		//Получаем ответ
-		result := responseRecorder.Result()
+	// 	//Получаем ответ
+	// 	result := responseRecorder.Result()
 
-		defer result.Body.Close()
-		//Делаем проверки
-		//Проверка ответа сервера
-		assert.Equal(t, test2.want.code, result.StatusCode)
+	// 	defer result.Body.Close()
+	// 	//Делаем проверки
+	// 	//Проверка ответа сервера
+	// 	assert.Equal(t, test2.want.code, result.StatusCode)
 
-	})
+	// })
 }

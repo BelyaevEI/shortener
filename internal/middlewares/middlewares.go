@@ -1,10 +1,15 @@
 package midllewares
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/BelyaevEI/shortener/internal/compres"
+	cookies "github.com/BelyaevEI/shortener/internal/cookie"
+	"github.com/BelyaevEI/shortener/internal/models"
+	"github.com/BelyaevEI/shortener/internal/utils"
 )
 
 // Middleware - мидлварь сжатия
@@ -47,5 +52,57 @@ func Gzip(h http.Handler) http.Handler {
 		}
 		// передаём управление хендлеру
 		h.ServeHTTP(ow, r)
+	})
+}
+
+// func Gzip(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		if r.Header.Get(`Content-Encoding`) == `gzip` {
+// 			gz, err := gzip.NewReader(r.Body)
+// 			if err != nil {
+// 				http.Error(w, err.Error(), http.StatusInternalServerError)
+// 				return
+// 			}
+
+// 			r.Body = gz
+// 			defer gz.Close()
+// 		}
+
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
+
+// Middleware - работа с куки
+func Cookie(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		const keyID models.KeyID = "userID"
+
+		cookie, err := r.Cookie("Token")
+
+		if err != nil {
+
+			if !errors.Is(err, http.ErrNoCookie) {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			// если кук нет, то сгенерируем
+			userID := utils.GenerateUniqueID()
+			cookies.NewCookie(w, userID)
+			ctx := context.WithValue(r.Context(), keyID, userID)
+			h.ServeHTTP(w, r.WithContext(ctx))
+		}
+
+		// если кук нет или валидация не прошла
+		// генерируем новые куки по заданию
+		if cookie == nil || !cookies.Validation(cookie.Value) {
+			userID := utils.GenerateUniqueID()
+			cookies.NewCookie(w, userID)
+			ctx := context.WithValue(r.Context(), keyID, userID)
+			h.ServeHTTP(w, r.WithContext(ctx))
+		}
+
+		h.ServeHTTP(w, r)
 	})
 }

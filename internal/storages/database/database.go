@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/BelyaevEI/shortener/internal/logger"
+	"github.com/BelyaevEI/shortener/internal/models"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -21,9 +22,9 @@ func New(DBpath string, log *logger.Logger) *database {
 		log.Log.Error(err)
 	}
 
-	_, err = db.Exec("create table IF NOT EXISTS storage_urls(short text not null, long text not null)")
+	_, err = db.Exec("create table IF NOT EXISTS storage_urls(userID bigint NOT NULL, short text not null, long text not null, deleted boolean default false)")
 	if err != nil {
-		log.Log.Error("Error create tabele", err)
+		log.Log.Error("Error create table", err)
 		return nil
 	}
 
@@ -34,8 +35,8 @@ func New(DBpath string, log *logger.Logger) *database {
 	}
 }
 
-func (d *database) Save(ctx context.Context, url1, url2 string) error {
-	_, err := d.db.ExecContext(ctx, "insert into storage_urls(short, long) values ($1, $2)", url1, url2)
+func (d *database) Save(ctx context.Context, url1, url2 string, userID uint32) error {
+	_, err := d.db.ExecContext(ctx, "INSERT INTO storage_urls(userID, short, long) values ($1, $2, $3)", userID, url1, url2)
 	return err
 }
 
@@ -46,31 +47,42 @@ func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, er
 		err      error
 	)
 
-	row := d.db.QueryRowContext(ctx, "select short from storage_urls where long=$1", inputURL)
+	d.log.Log.Info(inputURL)
+
+	row := d.db.QueryRowContext(ctx, "SELECT short FROM storage_urls where long=$1", inputURL)
 	if err = row.Scan(&foundURL); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return "", err
 		}
 		return "", nil
 	}
+
+	d.log.Log.Info(foundURL)
+
 	return foundURL, nil
 }
 
-func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
+func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 
 	var (
 		foundURL string
 		err      error
+		deleted  bool
 	)
 
-	row := d.db.QueryRowContext(ctx, "select long from storage_urls where short=$1", inputURL)
-	if err = row.Scan(&foundURL); err != nil {
+	d.log.Log.Info(inputURL)
+
+	row := d.db.QueryRowContext(ctx, "SELECT long, deleted FROM storage_urls where short=$1", inputURL)
+	if err = row.Scan(&foundURL, &deleted); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			return "", err
+			return "", false, err
 		}
-		return "", nil
+		return "", false, nil
 	}
-	return foundURL, nil
+
+	d.log.Log.Info(foundURL)
+
+	return foundURL, deleted, nil
 }
 
 func (d *database) Ping(ctx context.Context) error {
@@ -84,4 +96,45 @@ func (d *database) Ping(ctx context.Context) error {
 	default:
 		return nil
 	}
+}
+
+func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
+	storageURLS := make([]models.StorageURL, 0)
+
+	rows, err := d.db.QueryContext(ctx, "SELECT userID, short, long from storage_urls WHERE userID=$1", userID)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var store models.StorageURL
+		err = rows.Scan(&store.UserID, &store.ShortURL, &store.OriginalURL)
+		if err != nil {
+			if !errors.Is(err, sql.ErrNoRows) {
+				return nil, err
+			}
+			return nil, nil
+		}
+		storageURLS = append(storageURLS, store)
+	}
+
+	// проверяем на ошибки
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return storageURLS, nil
+
+}
+
+func (d *database) UpdateDeletedFlag(data models.DeleteURL) {
+
+	sql, err := d.db.Exec("UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2", data.UserID, data.ShortURL)
+	if err != nil {
+		d.log.Log.Error(err)
+		return
+	}
+
+	d.log.Log.Infoln(sql.RowsAffected())
 }

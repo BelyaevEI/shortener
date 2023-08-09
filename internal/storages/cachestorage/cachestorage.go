@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/BelyaevEI/shortener/internal/logger"
+	"github.com/BelyaevEI/shortener/internal/models"
 )
 
 type cache struct {
@@ -22,44 +23,30 @@ func New(log *logger.Logger) *cache {
 
 func (c *cache) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageShortURL[inputURL]
-
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	default:
-		return foundurl, nil
-	}
+	return foundurl, nil
 
 }
 
-func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
+func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 	foundurl := c.storageOriginURL[inputURL]
+	return foundurl, false, nil
 
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	default:
-		return foundurl, nil
-	}
 }
 
-func (c *cache) Save(ctx context.Context, shortURL, longURL string) error {
+func (c *cache) Save(ctx context.Context, shortURL, longURL string, userID uint32) error {
 	c.storageShortURL[longURL] = shortURL
 	c.storageOriginURL[shortURL] = longURL
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-		return nil
-	}
+	return nil
 }
 
 func (c *cache) Ping(ctx context.Context) error {
 	c.log.Log.Info("Work with internal storage: no implement method Ping")
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-		return nil
-	}
+	return nil
+}
+
+func (c *cache) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
+	return nil, nil
+}
+
+func (c *cache) UpdateDeletedFlag(data models.DeleteURL) {
 }

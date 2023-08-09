@@ -32,7 +32,7 @@ func New(path string, log *logger.Logger) *filestorage {
 		log:             log}
 }
 
-func (s *filestorage) Save(ctx context.Context, url1, url2 string) error {
+func (s *filestorage) Save(ctx context.Context, url1, url2 string, userID uint32) error {
 
 	var longShortURL models.StorageURL
 
@@ -44,7 +44,7 @@ func (s *filestorage) Save(ctx context.Context, url1, url2 string) error {
 
 	defer file.Close()
 
-	longShortURL.OriginalURL, longShortURL.ShortURL = url2, url1
+	longShortURL.UserID, longShortURL.OriginalURL, longShortURL.ShortURL = userID, url2, url1
 	encoder := json.NewEncoder(file)
 	select {
 	case <-ctx.Done():
@@ -73,7 +73,7 @@ func (s *filestorage) GetShortURL(ctx context.Context, inputURL string) (string,
 	}
 }
 
-func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, error) {
+func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 
 	var (
 		storageURL []models.StorageURL
@@ -86,9 +86,9 @@ func (s *filestorage) GetOriginURL(ctx context.Context, inputURL string) (string
 
 	select {
 	case <-ctx.Done():
-		return "", ctx.Err()
+		return "", false, ctx.Err()
 	default:
-		return foundurl, nil
+		return foundurl, false, nil
 	}
 
 }
@@ -101,4 +101,17 @@ func (s *filestorage) Ping(ctx context.Context) error {
 	default:
 		return nil
 	}
+}
+
+func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
+
+	storageURL := utils.ReadFile(s.FileStoragePath, s.log)
+	userURLS, err := utils.TryFoundUserURLS(userID, storageURL)
+	if err != nil {
+		return nil, err
+	}
+	return userURLS, nil
+}
+
+func (s *filestorage) UpdateDeletedFlag(data models.DeleteURL) {
 }

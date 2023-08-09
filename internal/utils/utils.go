@@ -2,8 +2,10 @@ package utils
 
 import (
 	"bufio"
+	"encoding/binary"
 	"encoding/json"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -97,4 +99,89 @@ func ReadFile(path string, logger *logger.Logger) []models.StorageURL {
 	}
 
 	return storageURL
+}
+
+// Генерация уникального ID для пользователя
+func GenerateUniqueID() uint32 {
+
+	time := time.Now().UnixNano()
+
+	randomBytes := make([]byte, 4)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Конвертируем случайное число в uint64
+	randomNumber := binary.BigEndian.Uint32(randomBytes)
+
+	// Добавляем к времени случайное число
+	uniqueNumber := uint32(time) + randomNumber
+
+	return uniqueNumber
+}
+
+// Поиск ссылок в файле по юзеру
+func TryFoundUserURLS(userID uint32, s []models.StorageURL) ([]models.StorageURL, error) {
+	store := make([]models.StorageURL, 0)
+
+	for _, line := range s {
+		if line.UserID == userID {
+			store = append(store, line)
+		}
+	}
+
+	if len(store) == 0 {
+		return nil, nil
+	}
+
+	return store, nil
+}
+
+func RemoveDuplicate(deleteURLS []string) []models.DeleteURL {
+	var result []models.DeleteURL
+
+	dd := make(map[string]struct{})
+
+	for _, v := range deleteURLS {
+		if _, ok := dd[v]; !ok {
+			dd[v] = struct{}{}
+
+			var res models.DeleteURL
+			res.ShortURL = v
+			result = append(result, res)
+		}
+	}
+	return result
+}
+
+func MarkDeletion(userURLS []models.StorageURL, deleteURLS []string) []models.DeleteURL {
+	var del models.DeleteURL
+	markDel := make([]models.DeleteURL, 0)
+
+	for _, varDel := range deleteURLS {
+		for _, v := range userURLS {
+			if !v.DeletedFlag && v.ShortURL == varDel {
+				del.ShortURL = v.ShortURL
+				markDel = append(markDel, del)
+			}
+		}
+	}
+	return markDel
+}
+func Generator(input []string, userID uint32) chan models.DeleteURL {
+	inputCh := make(chan models.DeleteURL, 10)
+
+	go func() {
+		defer close(inputCh)
+
+		for _, data := range input {
+			deleteURL := models.DeleteURL{ShortURL: data,
+				UserID: userID,
+			}
+			inputCh <- deleteURL
+		}
+	}()
+
+	return inputCh
 }
