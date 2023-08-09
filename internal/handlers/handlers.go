@@ -28,7 +28,6 @@ func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers
 		shortURL: shortURL,
 		storage:  storage,
 		logger:   log,
-		URLChan:  make(chan models.DeleteURL, 1024),
 	}
 }
 
@@ -46,8 +45,6 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	// ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	// defer cancel()
 	// userID должен быть всегда
 	cookie, err := r.Cookie("Token")
 	if err != nil {
@@ -385,8 +382,6 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	// ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	// defer cancel()
 	// userID должен быть всегда
 	cookie, err := r.Cookie("Token")
 	if err != nil {
