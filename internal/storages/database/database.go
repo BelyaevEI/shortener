@@ -128,9 +128,9 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 
 }
 
-func (d *database) UpdateDeletedFlag(ctx context.Context, data models.DeleteURL) {
+func (d *database) UpdateDeletedFlag(data models.DeleteURL) {
 
-	sql, err := d.db.ExecContext(ctx, "UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2", data.UserID, data.ShortURL)
+	sql, err := d.db.Exec("UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2", data.UserID, data.ShortURL)
 	if err != nil {
 		d.log.Log.Error(err)
 		return

@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	cookies "github.com/BelyaevEI/shortener/internal/cookie"
@@ -415,21 +414,17 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(deleteURLS) != 0 {
-
-		var wg sync.WaitGroup
-		wg.Add(1)
-
 		inputCh := utils.Generator(deleteURLS, userID)
-		go h.UpdateDeletedFlag(ctx, inputCh, &wg)
+		go h.UpdateDeletedFlag(inputCh)
 
-		wg.Wait()
 		w.WriteHeader(http.StatusAccepted)
+		return
 	}
+	w.WriteHeader(http.StatusBadRequest)
 }
 
-func (h *Handlers) UpdateDeletedFlag(ctx context.Context, inputCH chan models.DeleteURL, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (h *Handlers) UpdateDeletedFlag(inputCH chan models.DeleteURL) {
 	for v := range inputCH {
-		h.storage.UpdateDeletedFlag(ctx, v)
+		h.storage.UpdateDeletedFlag(v)
 	}
 }

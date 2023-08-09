@@ -43,13 +43,10 @@ func Validation(tokenString string) bool {
 			return []byte(secretKey), nil
 		})
 
-	if err != nil {
+	if err != nil || !token.Valid {
 		return false
 	}
 
-	if !token.Valid {
-		return false
-	}
 	return true
 }
 
@@ -78,11 +75,8 @@ func GetUserID(tokenString string) (uint32, error) {
 			}
 			return []byte(secretKey), nil
 		})
-	if err != nil {
-		return 0, err
-	}
 
-	if !token.Valid {
+	if err != nil || !token.Valid {
 		return 0, err
 	}
 
