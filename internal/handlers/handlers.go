@@ -20,7 +20,6 @@ type Handlers struct {
 	shortURL string
 	storage  *storage.Storage
 	logger   *logger.Logger
-	URLChan  chan models.DeleteURL
 }
 
 func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers {
