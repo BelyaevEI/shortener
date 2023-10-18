@@ -20,6 +20,7 @@ func RunServer() error {
 	//Инициализируем сервис
 	app := NewApp()
 	return http.ListenAndServe(app.flagRunAddr, app.chi)
+
 }
 
 func NewApp() *App {
