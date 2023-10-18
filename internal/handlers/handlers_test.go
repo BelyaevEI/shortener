@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	_ "net/http/pprof"
+
 	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/storages/storage"
@@ -54,6 +56,7 @@ func TestReplacePOST(t *testing.T) {
 	h := New(cfg.ShortURL, storage, log)
 
 	t.Run(test1.name, func(t *testing.T) {
+
 		//Создаем тело запроса
 		requestBody := strings.NewReader("https://practicum.yandex.ru/")
 
@@ -88,6 +91,19 @@ func TestReplacePOST(t *testing.T) {
 
 		//Проверка тела ответа на пустоту
 		assert.NotEmpty(t, string(resBody))
+
+		// // создаём файл журнала профилирования памяти
+		// fmem, err := os.Create(`base.pprof`)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		// defer fmem.Close()
+
+		// runtime.GC() // получаем статистику по использованию памяти
+		// if err := pprof.WriteHeapProfile(fmem); err != nil {
+		// 	panic(err)
+		// }
+
 	})
 
 	// t.Run(test2.name, func(t *testing.T) {
@@ -116,4 +132,33 @@ func TestReplacePOST(t *testing.T) {
 	// 	assert.Equal(t, test2.want.code, result.StatusCode)
 
 	// })
+}
+
+func BenchmarkReplacePOST(b *testing.B) {
+
+	//Создаем логгер
+	log := logger.New()
+
+	storage := storage.Init(" ", "", log)
+
+	//Создаем обьект handle
+	h := New("http://localhost:8080", storage, log)
+
+	//Создаем тело запроса
+	requestBody := strings.NewReader("https://practicum.yandex.ru/")
+
+	//Создаем сам запрос
+	request := httptest.NewRequest(http.MethodPost, "/", requestBody)
+
+	//Устанавливаем заголовок
+	request.Header.Set("Content-Type", "text/plain")
+
+	//Создаем рекордер для записи ответа
+	responseRecorder := httptest.NewRecorder()
+
+	for i := 0; i < b.N; i++ {
+
+		//Обрабатываем запрос
+		h.ReplacePOST(responseRecorder, request)
+	}
 }
