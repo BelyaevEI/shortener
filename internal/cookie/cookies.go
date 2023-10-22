@@ -1,3 +1,4 @@
+// This package for using cookie
 package cookies
 
 import (
@@ -11,11 +12,13 @@ import (
 const tokenExp = time.Hour * 3
 const secretKey = "supersecretkey"
 
+// Adding custom claim user ID
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID uint32
 }
 
+// Create a new cookie
 func NewCookie(w http.ResponseWriter, userID uint32) {
 
 	token, err := createToken(userID)
@@ -33,6 +36,7 @@ func NewCookie(w http.ResponseWriter, userID uint32) {
 	http.SetCookie(w, cookie)
 }
 
+// Validation of given token
 func Validation(tokenString string) bool {
 
 	token, err := jwt.Parse(tokenString,
@@ -66,6 +70,7 @@ func createToken(userID uint32) (string, error) {
 	return tokenString, nil
 }
 
+// This function return ID current user
 func GetUserID(tokenString string) (uint32, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims,
