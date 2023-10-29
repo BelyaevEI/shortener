@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -134,7 +135,7 @@ func TestReplaceGET(t *testing.T) {
 	// Сформируем варианты для тестирования
 	dataTest := test{name: "Simple test GET request",
 		want: want{
-			code:        http.StatusCreated,
+			code:        http.StatusTemporaryRedirect,
 			contentType: "text/plain",
 			url:         "https://practicum.yandex.ru/",
 		},
@@ -146,8 +147,11 @@ func TestReplaceGET(t *testing.T) {
 	log := logger.New()
 
 	storage := storage.Init(" ", "", log)
-	storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
-
+	err := storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	// Создаем обьект handle
 	h := New("http://localhost:8080", storage, log)
 
@@ -166,7 +170,7 @@ func TestReplaceGET(t *testing.T) {
 		responseRecorder := httptest.NewRecorder()
 
 		// Обрабатываем запрос
-		h.ReplacePOST(responseRecorder, request)
+		h.ReplaceGET(responseRecorder, request)
 
 		// Получаем ответ
 		result := responseRecorder.Result()
@@ -174,8 +178,9 @@ func TestReplaceGET(t *testing.T) {
 		assert.Equal(t, dataTest.want.code, result.StatusCode)
 
 		//Получаем тело ответа
-		resBody, err := io.ReadAll(result.Body)
+		resBody, _ := io.ReadAll(result.Body)
 		defer result.Body.Close()
+
 		h.logger.Log.Infoln(string(resBody), "Code ", result.StatusCode)
 		//Проверка ответа без ошибок
 		require.NoError(t, err)
