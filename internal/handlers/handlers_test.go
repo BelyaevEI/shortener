@@ -97,7 +97,7 @@ func TestReplacePOST(t *testing.T) {
 	t.Run(test2.name, func(t *testing.T) {
 
 		//Создаем тело запроса
-		requestBody := strings.NewReader(" ")
+		requestBody := strings.NewReader("")
 
 		//Создаем сам запрос
 		request := httptest.NewRequest(http.MethodPost, "/", requestBody)
