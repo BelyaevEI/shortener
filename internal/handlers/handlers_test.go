@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -118,6 +119,80 @@ func TestReplacePOST(t *testing.T) {
 		//Делаем проверки
 		//Проверка ответа сервера
 		assert.Equal(t, test2.want.code, result.StatusCode)
+
+	})
+}
+
+func TestReplaceGET(t *testing.T) {
+	//Структура запроса
+	type want struct {
+		code        int
+		contentType string
+		url         string
+	}
+
+	type test struct {
+		name string
+		want want
+	}
+
+	//Сформируем варианты для тестирования
+	dataTest := test{name: "Simple test GET request",
+		want: want{
+			code:        http.StatusCreated,
+			contentType: "text/plain",
+			url:         "https://practicum.yandex.ru/",
+		},
+	}
+
+	ctx := context.Background()
+
+	// Парсинг переменных окружения
+	cfg := config.ParseFlags()
+	cfg.FileStoragePath = " "
+
+	//Создаем логгер
+	log := logger.New()
+
+	storage := storage.Init(cfg.FileStoragePath, "", log)
+	storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
+
+	//Создаем обьект handle
+	h := New(cfg.ShortURL, storage, log)
+
+	t.Run(dataTest.name, func(t *testing.T) {
+
+		//Создаем тело запроса
+		requestBody := strings.NewReader("")
+
+		//Создаем сам запрос
+		request := httptest.NewRequest(http.MethodPost, "TESTURL", requestBody)
+
+		//Устанавливаем заголовок
+		request.Header.Set("Content-Type", "text/plain")
+
+		//Создаем рекордер для записи ответа
+		responseRecorder := httptest.NewRecorder()
+
+		//Обрабатываем запрос
+		h.ReplacePOST(responseRecorder, request)
+
+		//Получаем ответ
+		result := responseRecorder.Result()
+
+		defer result.Body.Close()
+
+		assert.Equal(t, dataTest.want.code, result.StatusCode)
+
+		//Получаем тело ответа
+		resBody, err := io.ReadAll(result.Body)
+		defer result.Body.Close()
+
+		//Проверка ответа без ошибок
+		require.NoError(t, err)
+
+		//Проверка тела ответа на пустоту
+		assert.NotEmpty(t, dataTest.want.url, string(resBody))
 
 	})
 }
