@@ -60,7 +60,7 @@ func TryFoundOrigURL(shortURL string, s []models.StorageURL) (url string) {
 func Response(w http.ResponseWriter, key, value, url string, statuscode int) {
 	w.Header().Set(key, value)
 	w.WriteHeader(statuscode)
-	// w.Write([]byte(url))
+	w.Write([]byte(url))
 }
 
 func ReadFile(path string, logger *logger.Logger) []models.StorageURL {
