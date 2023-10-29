@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -9,7 +10,6 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/BelyaevEI/shortener/internal/config"
 	"github.com/BelyaevEI/shortener/internal/logger"
 	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/stretchr/testify/assert"
@@ -43,17 +43,13 @@ func TestReplacePOST(t *testing.T) {
 		},
 	}
 
-	// Парсинг переменных окружения
-	cfg := config.ParseFlags()
-	cfg.FileStoragePath = " "
-
 	//Создаем логгер
 	log := logger.New()
 
-	storage := storage.Init(cfg.FileStoragePath, "", log)
+	storage := storage.Init(" ", "", log)
 
 	//Создаем обьект handle
-	h := New(cfg.ShortURL, storage, log)
+	h := New("http://localhost:8080", storage, log)
 
 	t.Run(test1.name, func(t *testing.T) {
 
@@ -122,79 +118,73 @@ func TestReplacePOST(t *testing.T) {
 	})
 }
 
-// func TestReplaceGET(t *testing.T) {
-// 	//Структура запроса
-// 	type want struct {
-// 		code        int
-// 		contentType string
-// 		url         string
-// 	}
+func TestReplaceGET(t *testing.T) {
+	//Структура запроса
+	type want struct {
+		code        int
+		contentType string
+		url         string
+	}
 
-// 	type test struct {
-// 		name string
-// 		want want
-// 	}
+	type test struct {
+		name string
+		want want
+	}
 
-// //Сформируем варианты для тестирования
-// dataTest := test{name: "Simple test GET request",
-// 	want: want{
-// 		code:        http.StatusCreated,
-// 		contentType: "text/plain",
-// 		url:         "https://practicum.yandex.ru/",
-// 	},
-// }
+	// Сформируем варианты для тестирования
+	dataTest := test{name: "Simple test GET request",
+		want: want{
+			code:        http.StatusCreated,
+			contentType: "text/plain",
+			url:         "https://practicum.yandex.ru/",
+		},
+	}
 
-// ctx := context.Background()
+	ctx := context.Background()
 
-// // Парсинг переменных окружения
-// cfg := config.ParseFlags()
-// cfg.FileStoragePath = " "
+	// Создаем логгер
+	log := logger.New()
 
-// //Создаем логгер
-// log := logger.New()
+	storage := storage.Init(" ", "", log)
+	storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
 
-// storage := storage.Init(cfg.FileStoragePath, "", log)
-// storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
+	// Создаем обьект handle
+	h := New("http://localhost:8080", storage, log)
 
-// //Создаем обьект handle
-// h := New(cfg.ShortURL, storage, log)
+	t.Run(dataTest.name, func(t *testing.T) {
 
-// t.Run(dataTest.name, func(t *testing.T) {
+		//Создаем тело запроса
+		requestBody := strings.NewReader("")
 
-// 	//Создаем тело запроса
-// 	requestBody := strings.NewReader("")
+		//Создаем сам запрос
+		request := httptest.NewRequest(http.MethodGet, "/TESTURL", requestBody)
 
-// 	//Создаем сам запрос
-// 	request := httptest.NewRequest(http.MethodPost, "TESTURL", requestBody)
+		//Устанавливаем заголовок
+		request.Header.Set("Content-Type", "text/plain")
 
-// 	//Устанавливаем заголовок
-// 	request.Header.Set("Content-Type", "text/plain")
+		// Создаем рекордер для записи ответа
+		responseRecorder := httptest.NewRecorder()
 
-// 	// Создаем рекордер для записи ответа
-// responseRecorder := httptest.NewRecorder()
+		// Обрабатываем запрос
+		h.ReplacePOST(responseRecorder, request)
 
-// //Обрабатываем запрос
-// h.ReplacePOST(responseRecorder, request)
+		// Получаем ответ
+		result := responseRecorder.Result()
 
-// //Получаем ответ
-// result := responseRecorder.Result()
+		assert.Equal(t, dataTest.want.code, result.StatusCode)
 
-// defer result.Body.Close()
+		//Получаем тело ответа
+		resBody, err := io.ReadAll(result.Body)
+		defer result.Body.Close()
+		h.logger.Log.Infoln(string(resBody), "Code ", result.StatusCode)
+		//Проверка ответа без ошибок
+		require.NoError(t, err)
 
-// assert.Equal(t, dataTest.want.code, result.StatusCode)
+		//Проверка тела ответа на пустоту
+		assert.NotEmpty(t, dataTest.want.url, string(resBody))
 
-// 		//Получаем тело ответа
-// 		resBody, err := io.ReadAll(result.Body)
-// 		defer result.Body.Close()
-
-// 		//Проверка ответа без ошибок
-// 		require.NoError(t, err)
-
-// 		//Проверка тела ответа на пустоту
-// 		assert.NotEmpty(t, dataTest.want.url, string(resBody))
-
-// 	})
-// }
+	})
+}
 
 func BenchmarkReplacePOST(b *testing.B) {
 
