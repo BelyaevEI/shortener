@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/BelyaevEI/shortener/internal/logger"
+	"github.com/BelyaevEI/shortener/internal/models"
 	"github.com/BelyaevEI/shortener/internal/storages/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -181,12 +183,80 @@ func TestReplaceGET(t *testing.T) {
 		resBody, _ := io.ReadAll(result.Body)
 		defer result.Body.Close()
 
-		h.logger.Log.Infoln(string(resBody), "Code ", result.StatusCode)
 		//Проверка ответа без ошибок
 		require.NoError(t, err)
 
+		//Проверка тела ответа
+		assert.Equal(t, dataTest.want.url, string(resBody))
+
+	})
+}
+
+func TestPostAPI(t *testing.T) {
+	// Структура запроса
+	type want struct {
+		code        int
+		contentType string
+	}
+
+	type res struct {
+		Result string `json:"result"`
+	}
+
+	type test struct {
+		name string
+		want want
+	}
+
+	// Сформируем варианты для тестирования
+	dataTest := test{
+		name: "Post APi test",
+		want: want{code: http.StatusCreated,
+			contentType: "application/json"},
+	}
+
+	// Создаем логгер
+	log := logger.New()
+
+	storage := storage.Init(" ", "", log)
+
+	// Создаем обьект handle
+	h := New("http://localhost:8080", storage, log)
+
+	t.Run(dataTest.name, func(t *testing.T) {
+
+		var res res
+
+		r := models.Request{URL: "https://practicum.yandex.ru"}
+
+		req, _ := json.Marshal(r)
+
+		//Создаем тело запроса
+		requestBody := strings.NewReader(string(req))
+
+		//Создаем сам запрос
+		request := httptest.NewRequest(http.MethodPost, "/api/shorten", requestBody)
+
+		//Устанавливаем заголовок
+		request.Header.Set("Content-Type", "json/application")
+
+		// Создаем рекордер для записи ответа
+		responseRecorder := httptest.NewRecorder()
+
+		// Обрабатываем запрос
+		h.PostAPI(responseRecorder, request)
+
+		// Получаем ответ
+		result := responseRecorder.Result()
+
+		//Получаем тело ответа
+		resBody, _ := io.ReadAll(result.Body)
+		defer result.Body.Close()
+
+		json.Unmarshal(resBody, &res)
+
 		//Проверка тела ответа на пустоту
-		assert.NotEmpty(t, dataTest.want.url, string(resBody))
+		assert.NotEmpty(t, res)
 
 	})
 }
