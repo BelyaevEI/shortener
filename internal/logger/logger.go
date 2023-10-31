@@ -1,3 +1,4 @@
+// This package measurment speed of handlers
 package logger
 
 import (

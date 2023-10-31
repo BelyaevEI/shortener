@@ -1,3 +1,4 @@
+// This package for registrate environment variable and run arguments.
 package config
 
 import (
@@ -12,6 +13,7 @@ type Parameters struct {
 	DBpath          string
 }
 
+// This func registrate environment variable and run arguments.
 func ParseFlags() Parameters {
 
 	var (

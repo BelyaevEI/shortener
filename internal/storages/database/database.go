@@ -16,6 +16,7 @@ type database struct {
 	log    *logger.Logger
 }
 
+// Create a new storage using database
 func New(DBpath string, log *logger.Logger) *database {
 	db, err := sql.Open("pgx", DBpath)
 	if err != nil {
@@ -35,11 +36,13 @@ func New(DBpath string, log *logger.Logger) *database {
 	}
 }
 
+// Save short and origin urls to database
 func (d *database) Save(ctx context.Context, url1, url2 string, userID uint32) error {
 	_, err := d.db.ExecContext(ctx, "INSERT INTO storage_urls(userID, short, long) values ($1, $2, $3)", userID, url1, url2)
 	return err
 }
 
+// Find short url
 func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 
 	var (
@@ -62,6 +65,7 @@ func (d *database) GetShortURL(ctx context.Context, inputURL string) (string, er
 	return foundURL, nil
 }
 
+// Find origin url
 func (d *database) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 
 	var (
@@ -98,6 +102,7 @@ func (d *database) Ping(ctx context.Context) error {
 	}
 }
 
+// Find all user url
 func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.StorageURL, error) {
 	storageURLS := make([]models.StorageURL, 0)
 
@@ -128,6 +133,7 @@ func (d *database) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Sto
 
 }
 
+// Update deleted flag in datatabse
 func (d *database) UpdateDeletedFlag(data models.DeleteURL) {
 
 	sql, err := d.db.Exec("UPDATE storage_urls SET deleted = true WHERE userID = $1 AND short = $2", data.UserID, data.ShortURL)

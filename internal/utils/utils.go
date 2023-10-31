@@ -15,6 +15,7 @@ import (
 	"github.com/BelyaevEI/shortener/internal/models"
 )
 
+// Generate random token
 func GenerateRandomString(length int) string {
 	// Задаем символы, из которых будет состоять случайная строка
 	charSet := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

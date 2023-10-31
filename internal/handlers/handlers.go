@@ -1,3 +1,4 @@
+// This package for handlers of service
 package handlers
 
 import (
@@ -30,6 +31,7 @@ func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers
 	}
 }
 
+// This handler upload to service original link and receives short link
 func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 
 	var (
@@ -94,6 +96,7 @@ func (h *Handlers) ReplacePOST(w http.ResponseWriter, r *http.Request) {
 	utils.Response(w, "Content-Type", "text/plain", shortURL, status)
 }
 
+// This handler gets a long link from a short link
 func (h *Handlers) ReplaceGET(w http.ResponseWriter, r *http.Request) {
 
 	var id string
@@ -217,6 +220,7 @@ func (h *Handlers) PostAPI(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// This handle check ping of database
 func (h *Handlers) PingDB(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -264,7 +268,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(body, &batchinput)
 	if err != nil {
-		h.logger.Log.Error("Error deserialization", err)
+		h.logger.Log.Error("Error deserialization ", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -309,6 +313,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// This handle gets a lot off link which user uoload to service
 func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 	var (
 		userID    uint32
@@ -369,6 +374,7 @@ func (h *Handlers) GetAllUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// This handle deleted uploaded link of user
 func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 
 	var (
@@ -417,6 +423,7 @@ func (h *Handlers) DeleteUrlsUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusBadRequest)
 }
 
+// This handle update flag in service storage
 func (h *Handlers) UpdateDeletedFlag(inputCH chan models.DeleteURL) {
 	for v := range inputCH {
 		h.storage.UpdateDeletedFlag(v)

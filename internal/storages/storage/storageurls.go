@@ -10,10 +10,12 @@ import (
 	"github.com/BelyaevEI/shortener/internal/storages/filestorage"
 )
 
+// This structure contain storage which init with use interface
 type Storage struct {
 	storage models.Storage
 }
 
+// This function storage initialization depending on conditions
 func Init(filepath, dbpath string, log *logger.Logger) *Storage {
 	if dbpath != "" {
 		return &Storage{storage: database.New(dbpath, log)}

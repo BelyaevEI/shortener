@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// Create a new route to server
 func New(h handlers.Handlers, log *logger.Logger) *chi.Mux {
 
 	r := chi.NewRouter()
