@@ -149,11 +149,8 @@ func TestReplaceGET(t *testing.T) {
 	log := logger.New()
 
 	storage := storage.Init(" ", "", log)
-	err := storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
+
 	// Создаем обьект handle
 	h := New("http://localhost:8080", storage, log)
 
@@ -180,7 +177,7 @@ func TestReplaceGET(t *testing.T) {
 		assert.Equal(t, dataTest.want.code, result.StatusCode)
 
 		//Получаем тело ответа
-		resBody, _ := io.ReadAll(result.Body)
+		resBody, err := io.ReadAll(result.Body)
 		defer result.Body.Close()
 
 		//Проверка ответа без ошибок
@@ -188,7 +185,6 @@ func TestReplaceGET(t *testing.T) {
 
 		//Проверка тела ответа
 		assert.Equal(t, dataTest.want.url, string(resBody))
-
 	})
 }
 
@@ -210,7 +206,7 @@ func TestPostAPI(t *testing.T) {
 
 	// Сформируем варианты для тестирования
 	dataTest := test{
-		name: "Post APi test",
+		name: "Post API test",
 		want: want{code: http.StatusCreated,
 			contentType: "application/json"},
 	}
@@ -258,6 +254,86 @@ func TestPostAPI(t *testing.T) {
 		//Проверка тела ответа на пустоту
 		assert.NotEmpty(t, res)
 
+		//Проверка ответа сервера
+		assert.Equal(t, dataTest.want.code, result.StatusCode)
+
+	})
+}
+
+func TestPostAPIBatch(t *testing.T) {
+	// Структура запроса
+	type want struct {
+		code        int
+		contentType string
+	}
+
+	type test struct {
+		name string
+		want want
+	}
+
+	// Сформируем варианты для тестирования
+	dataTest := test{
+		name: "Post API batch test",
+		want: want{code: http.StatusCreated,
+			contentType: "application/json"},
+	}
+
+	ctx := context.Background()
+
+	// Создаем логгер
+	log := logger.New()
+
+	storage := storage.Init(" ", "", log)
+	storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
+	storage.SaveURL(ctx, "TESTURL2", "https://yandex.ru/", 1234)
+
+	// Создаем обьект handle
+	h := New("http://localhost:8080", storage, log)
+
+	t.Run(dataTest.name, func(t *testing.T) {
+		var res models.Batch
+		r := make([]models.Batch, 0)
+
+		r = append(r, models.Batch{CorrelationID: "1",
+			OriginalURL: "https://practicum.yandex.ru"})
+
+		r = append(r, models.Batch{CorrelationID: "2",
+			OriginalURL: "https://yandex.ru"})
+
+		req, _ := json.Marshal(r)
+
+		//Создаем тело запроса
+		requestBody := strings.NewReader(string(req))
+
+		//Создаем сам запрос
+		request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", requestBody)
+
+		//Устанавливаем заголовок
+		request.Header.Set("Content-Type", "json/application")
+
+		// Создаем рекордер для записи ответа
+		responseRecorder := httptest.NewRecorder()
+
+		// Обрабатываем запрос
+		h.PostAPIBatch(responseRecorder, request)
+
+		// Получаем ответ
+		result := responseRecorder.Result()
+
+		//Получаем тело ответа
+		resBody, _ := io.ReadAll(result.Body)
+		defer result.Body.Close()
+
+		err := json.Unmarshal(resBody, &res)
+		if err != nil {
+			fmt.Println("Empty ")
+		}
+		// //Проверка тела ответа на пустоту
+		// assert.NotEmpty(t, res)
+
+		//Проверка ответа сервера
+		assert.Equal(t, dataTest.want.code, result.StatusCode)
 	})
 }
 

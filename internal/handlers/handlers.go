@@ -268,7 +268,7 @@ func (h *Handlers) PostAPIBatch(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(body, &batchinput)
 	if err != nil {
-		h.logger.Log.Error("Error deserialization", err)
+		h.logger.Log.Error("Error deserialization ", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

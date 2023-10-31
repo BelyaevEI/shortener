@@ -27,14 +27,12 @@ func New(log *logger.Logger) *cache {
 func (c *cache) GetShortURL(ctx context.Context, inputURL string) (string, error) {
 	foundurl := c.storageShortURL[inputURL]
 	return foundurl, nil
-
 }
 
 // Find origin url
 func (c *cache) GetOriginURL(ctx context.Context, inputURL string) (string, bool, error) {
 	foundurl := c.storageOriginURL[inputURL]
 	return foundurl, false, nil
-
 }
 
 // Save urls to memory
