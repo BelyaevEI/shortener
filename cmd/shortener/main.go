@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"text/template"
 
@@ -30,9 +29,7 @@ const Template = `	Build version: {{if .BuildVersion}} {{.BuildVersion}} {{else}
 
 func main() {
 	buildInfo()
-	if err := app.RunServer(); err != nil {
-		log.Fatal(err)
-	}
+	app.RunServer()
 }
 
 func buildInfo() {
