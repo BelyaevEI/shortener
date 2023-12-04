@@ -56,3 +56,8 @@ func (c *cache) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Storag
 // This is mock function
 func (c *cache) UpdateDeletedFlag(data models.DeleteURL) {
 }
+
+func (c *cache) GetStatistic() models.Statistic {
+	var stat models.Statistic
+	return stat
+}

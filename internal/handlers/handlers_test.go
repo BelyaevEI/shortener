@@ -52,7 +52,7 @@ func TestReplacePOST(t *testing.T) {
 	storage := storage.Init(" ", "", log)
 
 	//Создаем обьект handle
-	h := New("http://localhost:8080", storage, log)
+	h := New("http://localhost:8080", "", storage, log)
 
 	t.Run(test1.name, func(t *testing.T) {
 
@@ -152,7 +152,7 @@ func TestReplaceGET(t *testing.T) {
 	storage.SaveURL(ctx, "TESTURL", "https://practicum.yandex.ru/", 1234)
 
 	// Создаем обьект handle
-	h := New("http://localhost:8080", storage, log)
+	h := New("http://localhost:8080", "", storage, log)
 
 	t.Run(dataTest.name, func(t *testing.T) {
 
@@ -217,7 +217,7 @@ func TestPostAPI(t *testing.T) {
 	storage := storage.Init(" ", "", log)
 
 	// Создаем обьект handle
-	h := New("http://localhost:8080", storage, log)
+	h := New("http://localhost:8080", "", storage, log)
 
 	t.Run(dataTest.name, func(t *testing.T) {
 
@@ -289,7 +289,7 @@ func TestPostAPIBatch(t *testing.T) {
 	storage.SaveURL(ctx, "TESTURL2", "https://yandex.ru/", 1234)
 
 	// Создаем обьект handle
-	h := New("http://localhost:8080", storage, log)
+	h := New("http://localhost:8080", "", storage, log)
 
 	t.Run(dataTest.name, func(t *testing.T) {
 		var res models.Batch
@@ -345,7 +345,7 @@ func BenchmarkReplacePOST(b *testing.B) {
 	storage := storage.Init(" ", "", log)
 
 	//Создаем обьект handle
-	h := New("http://localhost:8080", storage, log)
+	h := New("http://localhost:8080", "", storage, log)
 
 	//Создаем тело запроса
 	requestBody := strings.NewReader("https://practicum.yandex.ru/")

@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -185,4 +186,21 @@ func Generator(input []string, userID uint32) chan models.DeleteURL {
 	}()
 
 	return inputCh
+}
+
+func CheckIPisTrusted(clientIP string, trustedSubnet string) (bool, error) {
+	_, trustedIP, err := net.ParseCIDR(trustedSubnet)
+	if err != nil {
+		return false, err
+	}
+
+	parsedIP := net.ParseIP(clientIP)
+	if parsedIP == nil {
+		return false, err
+	}
+
+	if !trustedIP.Contains(parsedIP) {
+		return false, nil
+	}
+	return true, nil
 }

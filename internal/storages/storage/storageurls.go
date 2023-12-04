@@ -49,3 +49,7 @@ func (s *Storage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.Stor
 func (s *Storage) UpdateDeletedFlag(data models.DeleteURL) {
 	s.storage.UpdateDeletedFlag(data)
 }
+
+func (s *Storage) GetStatistic() models.Statistic {
+	return s.storage.GetStatistic()
+}
