@@ -69,7 +69,7 @@ func runSrv() (*http.Server, error) {
 	s := storage.Init(cfg.FileStoragePath, cfg.DBpath, log)
 
 	// Создаем обьект handle
-	h := handlers.New(cfg.ShortURL, s, log)
+	h := handlers.New(cfg.ShortURL, cfg.TrustedSubnet, s, log)
 
 	// Создаем route
 	r := route.New(h, log)
@@ -92,9 +92,5 @@ func runSrv() (*http.Server, error) {
 	}
 
 	return srv, http.ListenAndServe(cfg.FlagRunAddr, r)
-	// return &App{
-	// 	flagRunAddr: cfg.FlagRunAddr,
-	// 	chi:         r,
-	// }
 
 }

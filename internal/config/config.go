@@ -15,6 +15,7 @@ type Parameters struct {
 	FileStoragePath string `json:"file_storage_path"`
 	DBpath          string `json:"database_dsn"`
 	EnableHTTPS     bool   `json:"enable_https"`
+	TrustedSubnet   string `json:"trusted_subnet"`
 	Path            string
 }
 
@@ -29,6 +30,7 @@ func ParseFlags() Parameters {
 		enableHTTPS     string
 		httpsVar        bool
 		path            string
+		trustedSubnet   string
 	)
 
 	// регистрируем переменную Path
@@ -63,6 +65,10 @@ func ParseFlags() Parameters {
 	// как аргумент -s со значением
 	flag.StringVar(&enableHTTPS, "s", "", "enable https")
 
+	// регистрируем переменную EnableHTTPS
+	// как аргумент -t со значением
+	flag.StringVar(&trustedSubnet, "t", "", "trusted subnet")
+
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 
@@ -89,6 +95,10 @@ func ParseFlags() Parameters {
 		dbpath = envDBStoragePath
 	}
 
+	if envTrustedSubnet := os.Getenv("TRUSTED_SUBNET"); envTrustedSubnet != "" {
+		trustedSubnet = envTrustedSubnet
+	}
+
 	if envEnableHTTPS := os.Getenv("ENABLE_HTTPS"); envEnableHTTPS != "" {
 		enableHTTPS = envEnableHTTPS
 	}
@@ -106,6 +116,7 @@ func ParseFlags() Parameters {
 		FileStoragePath: fileStoragePath,
 		DBpath:          dbpath,
 		EnableHTTPS:     httpsVar,
+		TrustedSubnet:   trustedSubnet,
 	}
 }
 

@@ -18,16 +18,18 @@ import (
 )
 
 type Handlers struct {
-	shortURL string
-	storage  *storage.Storage
-	logger   *logger.Logger
+	shortURL      string
+	storage       *storage.Storage
+	logger        *logger.Logger
+	trustedSubnet string
 }
 
-func New(shortURL string, storage *storage.Storage, log *logger.Logger) Handlers {
+func New(shortURL string, trustedSubnet string, storage *storage.Storage, log *logger.Logger) Handlers {
 	return Handlers{
-		shortURL: shortURL,
-		storage:  storage,
-		logger:   log,
+		shortURL:      shortURL,
+		storage:       storage,
+		logger:        log,
+		trustedSubnet: trustedSubnet,
 	}
 }
 
@@ -428,4 +430,38 @@ func (h *Handlers) UpdateDeletedFlag(inputCH chan models.DeleteURL) {
 	for v := range inputCH {
 		h.storage.UpdateDeletedFlag(v)
 	}
+}
+
+func (h *Handlers) Stats(w http.ResponseWriter, r *http.Request) {
+	realIP := r.Header.Get("X-Real-IP")
+	if realIP == "" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	isTrusted, err := utils.CheckIPisTrusted(realIP, h.trustedSubnet)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if !isTrusted {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	stat := h.storage.GetStatistic()
+	if stat == (models.Statistic{}) {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := json.Marshal(stat)
+	if err != nil {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(resp)
 }

@@ -24,6 +24,7 @@ func New(h handlers.Handlers, log *logger.Logger) *chi.Mux {
 	r.Post("/api/shorten/batch", h.PostAPIBatch)
 	r.Get("/api/user/urls", h.GetAllUrlsUser)
 	r.Delete("/api/user/urls", h.DeleteUrlsUser)
+	r.Get("/api/internal/stats", h.Stats)
 
 	return r
 }

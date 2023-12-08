@@ -144,3 +144,14 @@ func (d *database) UpdateDeletedFlag(data models.DeleteURL) {
 
 	d.log.Log.Infoln(sql.RowsAffected())
 }
+
+func (d *database) GetStatistic() models.Statistic {
+	var stat models.Statistic
+
+	res := d.db.QueryRow("SELECT count(distinct userID), count(*) FROM storage_urls")
+	err := res.Scan(&stat.Users, &stat.Urls)
+	if err != nil {
+		return stat
+	}
+	return stat
+}

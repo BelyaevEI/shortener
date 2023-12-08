@@ -25,6 +25,11 @@ type (
 		UserID   uint32
 	}
 
+	Statistic struct {
+		Urls  int `json:"urls"`
+		Users int `json:"users"`
+	}
+
 	Storage interface {
 		Save(ctx context.Context, url1, url2 string, userID uint32) error
 		GetOriginURL(ctx context.Context, shortURL string) (string, bool, error)
@@ -32,6 +37,7 @@ type (
 		Ping(ctx context.Context) error
 		GetUrlsUser(ctx context.Context, userID uint32) ([]StorageURL, error)
 		UpdateDeletedFlag(data DeleteURL)
+		GetStatistic() Statistic
 	}
 
 	Batch struct {

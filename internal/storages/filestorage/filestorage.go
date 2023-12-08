@@ -115,3 +115,24 @@ func (s *filestorage) GetUrlsUser(ctx context.Context, userID uint32) ([]models.
 
 func (s *filestorage) UpdateDeletedFlag(data models.DeleteURL) {
 }
+
+func (s *filestorage) GetStatistic() models.Statistic {
+	var stat models.Statistic
+
+	users := make(map[uint32]struct{})
+
+	storageURL := utils.ReadFile(s.FileStoragePath, s.log)
+
+	stat.Urls = len(storageURL)
+
+	for _, v := range storageURL {
+		if _, ok := users[v.UserID]; !ok {
+			users[v.UserID] = struct{}{}
+		}
+	}
+
+	stat.Users = len(users)
+
+	return stat
+
+}
